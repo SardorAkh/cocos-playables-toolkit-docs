@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sardor's Cocos Creator Toolkit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0b0f;
+            --bg-card: #12141c;
+            --bg-card-hover: #181b26;
+            --border: #1e2130;
+            --text: #e2e4ed;
+            --text-dim: #6b7094;
+            --accent-blue: #4f8fff;
+            --accent-purple: #9b6dff;
+            --accent-green: #3dd68c;
+            --accent-orange: #ff8f4f;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 80px 40px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header { margin-bottom: 80px; }
+
+        .title-line {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 3.2rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        h1 .gradient {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-dim);
+            font-weight: 300;
+            line-height: 1.6;
+            max-width: 560px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .card:hover {
+            background: var(--bg-card-hover);
+            border-color: #2a2e44;
+            transform: translateY(-2px);
+        }
+
+        .card:hover::before { opacity: 1; }
+
+        .card-blue::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
+        .card-green::before { background: linear-gradient(90deg, var(--accent-green), #2dd4bf); }
+        .card-orange::before { background: linear-gradient(90deg, var(--accent-orange), #ff6b9d); }
+        .card-purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
+
+        .card-icon {
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(79, 143, 255, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid rgba(79, 143, 255, 0.15);
+        }
+
+        .tag-green {
+            background: rgba(61, 214, 140, 0.1);
+            color: var(--accent-green);
+            border-color: rgba(61, 214, 140, 0.15);
+        }
+
+        .tag-dim {
+            background: rgba(107, 112, 148, 0.1);
+            color: var(--text-dim);
+            border-color: rgba(107, 112, 148, 0.15);
+        }
+
+        .card-soon {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        footer {
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        @media (max-width: 700px) {
+            .grid { grid-template-columns: 1fr; }
+            h1 { font-size: 2.2rem; }
+            .container { padding: 40px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    <div class="container">
+        <header>
+            <div class="title-line">Cocos Creator 3.8.x</div>
+            <h1>Playable Ads<br><span class="gradient">Toolkit</span></h1>
+            <p class="subtitle">Набор библиотек для разработки playable ads на Cocos Creator. Минимальный размер, максимальная функциональность.</p>
+        </header>
+
+        <div class="grid">
+            <a href="mini-di/" class="card card-blue">
+                <div class="card-icon">📦</div>
+                <h2>MiniDI</h2>
+                <p>Lightweight DI container. Вдохновлён VContainer (Unity), оптимизирован для playable ads.</p>
+                <div class="card-meta">
+                    <span class="tag">v1.1.0</span>
+                    <span class="tag-green tag">stable</span>
+                </div>
+            </a>
+
+            <a href="#" class="card card-green card-soon">
+                <div class="card-icon">🎬</div>
+                <h2>ScenarioSystem</h2>
+                <p>Linear async scenario runner. Step-based flow для playable ad сценариев.</p>
+                <div class="card-meta">
+                    <span class="tag tag-dim">soon</span>
+                </div>
+            </a>
+
+            <a href="#" class="card card-orange card-soon">
+                <div class="card-icon">✨</div>
+                <h2>NodeAnimator</h2>
+                <p>Fluent animation API с 24 пресетами, stagger, keyframes и loop support.</p>
+                <div class="card-meta">
+                    <span class="tag tag-dim">soon</span>
+                </div>
+            </a>
+
+            <a href="#" class="card card-purple card-soon">
+                <div class="card-icon">🔧</div>
+                <h2>Playable Modifier</h2>
+                <p>Electron-приложение для модификации и ре-скина playable ads.</p>
+                <div class="card-meta">
+                    <span class="tag tag-dim">soon</span>
+                </div>
+            </a>
+        </div>
+
+        <footer>
+            <a href="https://github.com/SardorAkh" target="_blank">github.com/SardorAkh</a>
+        </footer>
+    </div>
+</body>
+</html>

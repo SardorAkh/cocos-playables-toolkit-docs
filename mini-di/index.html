@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniDI — Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0b0f;
+            --bg-secondary: #12141c;
+            --bg-tertiary: #181b26;
+            --text-primary: #e2e4ed;
+            --text-secondary: #9196b0;
+            --text-muted: #6b7094;
+            --accent: #4f8fff;
+            --accent-hover: #6ba0ff;
+            --accent-purple: #9b6dff;
+            --border: #1e2130;
+            --success: #3dd68c;
+            --warning: #f0b232;
+            --error: #f85149;
+            --code-bg: #0e1018;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Top bar */
+        .topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 44px;
+            background: rgba(10, 11, 15, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 24px;
+            font-size: 0.82rem;
+        }
+
+        .topbar-home {
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: color 0.15s;
+        }
+
+        .topbar-home:hover { color: var(--text-primary); }
+
+        .topbar-sep {
+            width: 1px;
+            height: 18px;
+            background: var(--border);
+        }
+
+        .topbar-plugin {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .topbar-plugin:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .topbar-plugin.active { color: var(--accent); background: rgba(79, 143, 255, 0.1); }
+
+        /* Layout */
+        .container { display: flex; min-height: 100vh; padding-top: 44px; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 44px;
+            height: calc(100vh - 44px);
+            overflow-y: auto;
+            padding: 24px 0;
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h1 span {
+            background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .version {
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .nav-section { margin-bottom: 20px; }
+
+        .nav-section-title {
+            font-size: 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            padding: 10px 20px 5px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 7px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: all 0.12s;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-link:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+
+        .nav-link.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+            background: rgba(79, 143, 255, 0.06);
+        }
+
+        /* Search trigger */
+        .search-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 14px;
+            margin: 0 16px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.15s;
+        }
+
+        .search-trigger:hover { border-color: var(--accent); color: var(--text-secondary); }
+
+        .search-trigger kbd {
+            margin-left: auto;
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid var(--border);
+        }
+
+        /* Main */
+        .main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 48px 64px;
+            max-width: 920px;
+        }
+
+        /* Search Modal */
+        .search-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 100px;
+        }
+
+        .search-modal.active { display: flex; }
+
+        .search-container {
+            width: 560px;
+            background: var(--bg-secondary);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .search-input-wrapper {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+        }
+
+        .search-input-wrapper svg { color: var(--text-muted); flex-shrink: 0; }
+
+        .search-input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.05rem;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+        }
+
+        .search-input::placeholder { color: var(--text-muted); }
+
+        .search-results { max-height: 380px; overflow-y: auto; }
+
+        .search-result {
+            display: block;
+            padding: 12px 18px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.1s;
+        }
+
+        .search-result:hover,
+        .search-result.selected { background: var(--bg-tertiary); color: var(--text-primary); }
+
+        .search-result-title { font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+        .search-result-section { font-size: 0.78rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+        .search-result mark { background: rgba(79, 143, 255, 0.25); color: var(--accent); border-radius: 2px; }
+        .search-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); }
+
+        /* Typography */
+        h1, h2, h3, h4 { color: var(--text-primary); margin-bottom: 14px; }
+        h1 { font-size: 2rem; margin-bottom: 8px; }
+        h2 { font-size: 1.5rem; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border); }
+        h3 { font-size: 1.15rem; margin-top: 32px; color: var(--text-secondary); }
+        h4 { font-size: 0.95rem; margin-top: 22px; font-weight: 500; }
+
+        .section { margin-bottom: 36px; }
+        .section > p { color: var(--text-secondary); margin-bottom: 18px; }
+        .subtitle { font-size: 1.05rem; color: var(--text-secondary); margin-bottom: 28px; font-weight: 300; }
+
+        /* Code */
+        code {
+            background: var(--code-bg);
+            padding: 2px 7px;
+            border-radius: 5px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82em;
+            color: var(--accent);
+        }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px 20px;
+            overflow-x: auto;
+            margin: 14px 0;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            line-height: 1.75;
+        }
+
+        .code-comment { color: var(--text-muted); }
+        .code-keyword { color: #ff7b72; }
+        .code-string { color: #a5d6ff; }
+        .code-type { color: #79c0ff; }
+        .code-decorator { color: #c49bff; }
+        .code-function { color: #c49bff; }
+        .code-number { color: #79c0ff; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 0.88rem; }
+
+        th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+
+        th {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td code { font-size: 0.82em; }
+
+        /* Callouts */
+        .callout {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin: 18px 0;
+            border-left: 4px solid;
+            font-size: 0.92rem;
+        }
+
+        .callout-title { font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+        .callout-info { background: rgba(79, 143, 255, 0.07); border-color: var(--accent); }
+        .callout-warning { background: rgba(240, 178, 50, 0.07); border-color: var(--warning); }
+        .callout-error { background: rgba(248, 81, 73, 0.07); border-color: var(--error); }
+        .callout-success { background: rgba(61, 214, 140, 0.07); border-color: var(--success); }
+
+        /* Comparison */
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 18px 0; }
+
+        .comparison-box {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 18px;
+            border: 1px solid var(--border);
+        }
+
+        .comparison-box h4 { margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .comparison-box.do h4 { color: var(--success); }
+        .comparison-box.dont h4 { color: var(--error); }
+
+        /* Badge */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 0.72rem; font-weight: 500; font-family: 'JetBrains Mono', monospace; }
+        .badge-new { background: rgba(61, 214, 140, 0.15); color: var(--success); }
+
+        /* Lists */
+        ul, ol { margin: 14px 0; padding-left: 24px; color: var(--text-secondary); }
+        li { margin: 7px 0; }
+        li code { font-size: 0.82em; }
+
+        /* Anchor */
+        .anchor { color: var(--text-muted); text-decoration: none; margin-left: 8px; opacity: 0; transition: opacity 0.15s; }
+        h2:hover .anchor, h3:hover .anchor { opacity: 1; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 24px 20px; }
+            .comparison { grid-template-columns: 1fr; }
+            .topbar { padding: 0 12px; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top bar -->
+    <div class="topbar">
+        <a href="../" class="topbar-home">Toolkit</a>
+        <div class="topbar-sep"></div>
+        <a href="./" class="topbar-plugin active">MiniDI</a>
+        <a href="#" class="topbar-plugin" style="opacity:0.35;pointer-events:none">ScenarioSystem</a>
+        <a href="#" class="topbar-plugin" style="opacity:0.35;pointer-events:none">NodeAnimator</a>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>📦 <span>MiniDI</span></h1>
+                <div class="version">v1.1.0 · Cocos Creator 3.x</div>
+            </div>
+
+            <div class="search-trigger" onclick="openSearch()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Search...
+                <kbd>⌘K</kbd>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Getting Started</div>
+                <a href="#overview" class="nav-link active">Overview</a>
+                <a href="#installation" class="nav-link">Installation</a>
+                <a href="#quick-start" class="nav-link">Quick Start</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Core Concepts</div>
+                <a href="#registration-vs-injection" class="nav-link">Registration vs Injection</a>
+                <a href="#services" class="nav-link">Services</a>
+                <a href="#components" class="nav-link">Components</a>
+                <a href="#lifetime" class="nav-link">Lifetime</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">API Reference</div>
+                <a href="#container" class="nav-link">Container</a>
+                <a href="#container-builder" class="nav-link">ContainerBuilder</a>
+                <a href="#lifetime-scope" class="nav-link">LifetimeScope</a>
+                <a href="#decorators" class="nav-link">Decorators</a>
+                <a href="#interfaces" class="nav-link">Lifecycle Interfaces</a>
+                <a href="#logger" class="nav-link">Logger</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Advanced</div>
+                <a href="#injection-token" class="nav-link">InjectionToken</a>
+                <a href="#factories" class="nav-link">Factories</a>
+                <a href="#tick-manager" class="nav-link">TickManager</a>
+                <a href="#changelog" class="nav-link">Changelog</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+
+            <!-- Overview -->
+            <section id="overview" class="section" data-search="overview introduction what is minidi">
+                <h1>MiniDI</h1>
+                <p class="subtitle">Lightweight Dependency Injection for Cocos Creator 3.x Playable Ads</p>
+
+                <p>MiniDI — легковесный DI-контейнер, вдохновлённый VContainer (Unity). Оптимизирован для playable ads: минимальный размер (~1.5KB gzip), без reflect-metadata.</p>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 Ключевое отличие от VContainer</div>
+                    <p>В VContainer можно регистрировать MonoBehaviour в контейнере. В MiniDI — Cocos Components <strong>НЕ регистрируются</strong>, а инжектятся через декораторы <code>@NeedInject()</code> и <code>@InjectProperty()</code>.</p>
+                </div>
+            </section>
+
+            <!-- Installation -->
+            <section id="installation" class="section" data-search="installation setup git submodule clone">
+                <h2>Installation <a href="#installation" class="anchor">#</a></h2>
+
+                <h4>Git Submodule (recommended)</h4>
+                <pre><code>cd your-project/assets/scripts
+git submodule add https://github.com/SardorAkh/mini-di.git</code></pre>
+
+                <h4>Обновление</h4>
+                <pre><code><span class="code-comment"># Из корня проекта</span>
+git submodule update --remote assets/scripts/mini-di
+git add assets/scripts/mini-di
+git commit -m <span class="code-string">"Update mini-di"</span></code></pre>
+
+                <h4>Clone</h4>
+                <pre><code>cd your-project/assets/scripts
+git clone https://github.com/SardorAkh/mini-di.git</code></pre>
+            </section>
+
+            <!-- Quick Start -->
+            <section id="quick-start" class="section" data-search="quick start example tutorial basic">
+                <h2>Quick Start <a href="#quick-start" class="anchor">#</a></h2>
+
+                <h4>1. Создай сервис</h4>
+                <pre><code><span class="code-decorator">@Injectable</span>([])<br><span class="code-keyword">class</span> <span class="code-type">AudioService</span> {<br>    play(sound: <span class="code-type">string</span>): <span class="code-keyword">void</span> { }<br>}</code></pre>
+
+                <h4>2. Создай LifetimeScope</h4>
+                <pre><code><span class="code-decorator">@ccclass</span>(<span class="code-string">'GameLifetimeScope'</span>)<br><span class="code-keyword">class</span> <span class="code-type">GameLifetimeScope</span> <span class="code-keyword">extends</span> <span class="code-type">LifetimeScope</span> {<br>    <span class="code-keyword">protected</span> <span class="code-function">configure</span>(builder: <span class="code-type">ContainerBuilder</span>): <span class="code-keyword">void</span> {<br>        builder.registerSingleton(AudioService);<br>    }<br>}</code></pre>
+
+                <h4>3. Инжекть в компонент</h4>
+                <pre><code><span class="code-decorator">@NeedInject</span>()<br><span class="code-decorator">@ccclass</span>(<span class="code-string">'PlayerController'</span>)<br><span class="code-keyword">class</span> <span class="code-type">PlayerController</span> <span class="code-keyword">extends</span> <span class="code-type">Component</span> {<br>    <span class="code-decorator">@InjectProperty</span>(AudioService)<br>    <span class="code-keyword">private</span> audio!: <span class="code-type">AudioService</span>;<br><br>    <span class="code-function">start</span>(): <span class="code-keyword">void</span> {<br>        <span class="code-keyword">this</span>.audio.play(<span class="code-string">'jump'</span>);<br>    }<br>}</code></pre>
+            </section>
+
+            <!-- Registration vs Injection -->
+            <section id="registration-vs-injection" class="section" data-search="registration injection difference component service">
+                <h2>Registration vs Injection <a href="#registration-vs-injection" class="anchor">#</a></h2>
+
+                <div class="callout callout-error">
+                    <div class="callout-title">⚠️ Главное правило</div>
+                    <p><strong>НЕ регистрируй Cocos Components в контейнере!</strong> Компоненты уже существуют на сцене — их нужно только инжектить.</p>
+                </div>
+
+                <table>
+                    <thead><tr><th>Тип</th><th>Регистрировать?</th><th>Что делать</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>class MyService</code></td><td>✅ Да</td><td><code>builder.registerSingleton(MyService)</code></td></tr>
+                        <tr><td><code>class MyCtrl extends Component</code></td><td>❌ Нет</td><td><code>@NeedInject()</code> + <code>@InjectProperty()</code></td></tr>
+                        <tr><td>Существующий instance</td><td>✅ Да</td><td><code>builder.registerInstance(Token, instance)</code></td></tr>
+                    </tbody>
+                </table>
+
+                <div class="comparison">
+                    <div class="comparison-box do">
+                        <h4>✅ Правильно</h4>
+                        <pre><code><span class="code-keyword">protected</span> <span class="code-function">configure</span>(builder) {<br>  <span class="code-comment">// Сервисы — регистрируем</span><br>  builder.registerSingleton(GameFlowService);<br>  builder.registerSingleton(AudioService);<br><br>  <span class="code-comment">// Instance — если уже создан</span><br>  builder.registerInstance(GameProvider, <span class="code-keyword">this</span>.gameProvider);<br>}</code></pre>
+                    </div>
+                    <div class="comparison-box dont">
+                        <h4>❌ Неправильно</h4>
+                        <pre><code><span class="code-keyword">protected</span> <span class="code-function">configure</span>(builder) {<br>  <span class="code-comment">// НЕ регистрируй Components!</span><br>  builder.registerSingleton(GameFlowController);<br>  builder.registerSingleton(PlayerController);<br>}</code></pre>
+                    </div>
+                </div>
+
+                <h3>Как работает инъекция</h3>
+                <pre><code><span class="code-comment">// 1. LifetimeScope.onLoad() строит контейнер</span><br><span class="code-comment">// 2. injectSceneComponents() находит все @NeedInject() на сцене</span><br><span class="code-comment">// 3. resolveAll() создаёт все синглтоны</span><br><span class="code-comment">// 4. initializeAll() вызывает onInitialize()</span><br><span class="code-comment">// 5. LifetimeScope.start() → startAll()</span><br><span class="code-comment">// 6. Cocos вызывает start() на компонентах</span></code></pre>
+            </section>
+
+            <!-- Services -->
+            <section id="services" class="section" data-search="services injectable class plain">
+                <h2>Services <a href="#services" class="anchor">#</a></h2>
+                <p>Сервисы — обычные TypeScript классы без наследования от Component.</p>
+
+                <h4>Без зависимостей</h4>
+                <pre><code><span class="code-decorator">@Injectable</span>([])<br><span class="code-keyword">class</span> <span class="code-type">ConfigService</span> {<br>    <span class="code-keyword">readonly</span> apiUrl = <span class="code-string">'https://api.example.com'</span>;<br>}</code></pre>
+
+                <h4>С зависимостями</h4>
+                <pre><code><span class="code-decorator">@Injectable</span>([ConfigService, LoggerService])<br><span class="code-keyword">class</span> <span class="code-type">ApiService</span> {<br>    <span class="code-keyword">constructor</span>(<br>        <span class="code-keyword">private</span> config: <span class="code-type">ConfigService</span>,<br>        <span class="code-keyword">private</span> logger: <span class="code-type">LoggerService</span><br>    ) {}<br>}</code></pre>
+
+                <h4>С lifecycle интерфейсами</h4>
+                <pre><code><span class="code-decorator">@Injectable</span>([])<br><span class="code-keyword">class</span> <span class="code-type">AudioService</span> <span class="code-keyword">implements</span> <span class="code-type">IInitializable</span>, <span class="code-type">IDisposable</span> {<br>    [INITIALIZABLE] = <span class="code-keyword">true</span> <span class="code-keyword">as const</span>;<br>    [DISPOSABLE] = <span class="code-keyword">true</span> <span class="code-keyword">as const</span>;<br><br>    <span class="code-function">onInitialize</span>(): <span class="code-keyword">void</span> {<br>        <span class="code-comment">// Вызывается после resolveAll()</span><br>    }<br><br>    <span class="code-function">onDispose</span>(): <span class="code-keyword">void</span> {<br>        <span class="code-comment">// Вызывается при уничтожении LifetimeScope</span><br>    }<br>}</code></pre>
+
+                <div class="callout callout-warning">
+                    <div class="callout-title">⚠️ Symbol маркеры обязательны</div>
+                    <p>Без <code>[INITIALIZABLE] = true as const</code> метод <code>onInitialize()</code> НЕ будет вызван. Маркеры нужны чтобы отличить наши интерфейсы от Cocos методов.</p>
+                </div>
+            </section>
+
+            <!-- Components -->
+            <section id="components" class="section" data-search="components cocos needinject injectproperty">
+                <h2>Components <a href="#components" class="anchor">#</a></h2>
+                <p>Cocos Components получают зависимости через property injection.</p>
+
+                <pre><code><span class="code-decorator">@NeedInject</span>()  <span class="code-comment">// Обязательно!</span><br><span class="code-decorator">@ccclass</span>(<span class="code-string">'GameController'</span>)<br><span class="code-keyword">class</span> <span class="code-type">GameController</span> <span class="code-keyword">extends</span> <span class="code-type">Component</span> {<br>    <span class="code-decorator">@InjectProperty</span>(GameService)<br>    <span class="code-keyword">private</span> gameService!: <span class="code-type">GameService</span>;<br><br>    <span class="code-decorator">@InjectProperty</span>(AudioService)<br>    <span class="code-keyword">private</span> audio!: <span class="code-type">AudioService</span>;<br><br>    <span class="code-function">start</span>(): <span class="code-keyword">void</span> {<br>        <span class="code-keyword">this</span>.gameService.startGame();<br>    }<br>}</code></pre>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 Порядок вызовов</div>
+                    <ol>
+                        <li><code>LifetimeScope.onLoad()</code> — строит контейнер</li>
+                        <li><code>injectSceneComponents()</code> — инжектит все <code>@NeedInject()</code></li>
+                        <li><code>resolveAll()</code> — создаёт все синглтоны <span class="badge badge-new">v1.1.0</span></li>
+                        <li><code>initializeAll()</code> — вызывает <code>onInitialize()</code></li>
+                        <li><code>LifetimeScope.start()</code> → <code>startAll()</code></li>
+                        <li>Cocos вызывает <code>start()</code> на всех компонентах</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Lifetime -->
+            <section id="lifetime" class="section" data-search="lifetime singleton transient scope">
+                <h2>Lifetime <a href="#lifetime" class="anchor">#</a></h2>
+
+                <table>
+                    <thead><tr><th>Lifetime</th><th>Описание</th><th>Использование</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>Singleton</code></td><td>Один instance на контейнер</td><td>Сервисы, менеджеры, провайдеры</td></tr>
+                        <tr><td><code>Transient</code></td><td>Новый instance при каждом resolve</td><td>Фабрики, stateless утилиты</td></tr>
+                    </tbody>
+                </table>
+
+                <pre><code>builder.registerSingleton(AudioService);  <span class="code-comment">// Один на всех</span><br>builder.registerTransient(BulletFactory);  <span class="code-comment">// Новый каждый раз</span></code></pre>
+            </section>
+
+            <!-- Container -->
+            <section id="container" class="section" data-search="container api resolve register resolveall">
+                <h2>Container <a href="#container" class="anchor">#</a></h2>
+
+                <h3>Registration Methods</h3>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>register(token, options?)</code></td><td>Регистрация с опциями</td></tr>
+                        <tr><td><code>registerSingleton(token, class?)</code></td><td>Регистрация как singleton</td></tr>
+                        <tr><td><code>registerTransient(token, class?)</code></td><td>Регистрация как transient</td></tr>
+                        <tr><td><code>registerInstance(token, instance)</code></td><td>Регистрация существующего объекта</td></tr>
+                        <tr><td><code>registerFactory(token, factory, lifetime?)</code></td><td>Регистрация фабрики</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Resolution Methods</h3>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>resolve&lt;T&gt;(token): T</code></td><td>Получить зависимость. Throws если не найден.</td></tr>
+                        <tr><td><code>tryResolve&lt;T&gt;(token): T | null</code></td><td>Получить или null</td></tr>
+                        <tr><td><code>isRegistered(token): boolean</code></td><td>Проверить регистрацию</td></tr>
+                        <tr><td><code>resolveAll()</code> <span class="badge badge-new">v1.1.0</span></td><td>Eager-resolve всех синглтонов. Вызывается перед lifecycle.</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Cocos Extensions</h3>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>injectComponent(component)</code></td><td>Инжект в один компонент</td></tr>
+                        <tr><td><code>injectNode(node)</code></td><td>Инжект во все @NeedInject в иерархии</td></tr>
+                        <tr><td><code>instantiate(prefab, parent?)</code></td><td>Создать prefab с инъекцией</td></tr>
+                        <tr><td><code>instantiateAndGet(prefab, type, parent?)</code></td><td>Создать и получить компонент</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Lifecycle Methods</h3>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>resolveAll()</code></td><td>Создать все зарегистрированные синглтоны</td></tr>
+                        <tr><td><code>initializeAll()</code></td><td>Вызвать <code>onInitialize()</code> на IInitializable</td></tr>
+                        <tr><td><code>startAll()</code></td><td>Вызвать <code>onContainerStart()</code> на IStartable</td></tr>
+                        <tr><td><code>disposeAll()</code></td><td>Вызвать <code>onDispose()</code> на IDisposable (reverse order)</td></tr>
+                        <tr><td><code>getAllSingletons()</code></td><td>Получить все <strong>уже созданные</strong> singleton instances</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 getAllSingletons() — v1.1.0</div>
+                    <p>Теперь возвращает только уже инстанцированные синглтоны. Для eager-resolve используй <code>resolveAll()</code> перед вызовом lifecycle методов.</p>
+                </div>
+            </section>
+
+            <!-- ContainerBuilder -->
+            <section id="container-builder" class="section" data-search="containerbuilder builder fluent">
+                <h2>ContainerBuilder <a href="#container-builder" class="anchor">#</a></h2>
+                <p>Fluent API для конфигурации контейнера.</p>
+
+                <pre><code><span class="code-keyword">protected</span> <span class="code-function">configure</span>(builder: <span class="code-type">ContainerBuilder</span>): <span class="code-keyword">void</span> {<br>    builder<br>        .registerSingleton(ConfigService)<br>        .registerSingleton(AudioService)<br>        .registerSingleton(ApiService)<br>        .registerInstance(GameProvider, <span class="code-keyword">this</span>.gameProvider)<br>        .registerFactory(Logger, (c) => <span class="code-keyword">new</span> ConsoleLogger());<br>}</code></pre>
+
+                <table>
+                    <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>register(token, options?)</code></td><td><code>this</code></td></tr>
+                        <tr><td><code>registerSingleton(token, class?)</code></td><td><code>this</code></td></tr>
+                        <tr><td><code>registerTransient(token, class?)</code></td><td><code>this</code></td></tr>
+                        <tr><td><code>registerInstance(token, instance)</code></td><td><code>this</code></td></tr>
+                        <tr><td><code>registerFactory(token, factory, lifetime?)</code></td><td><code>this</code></td></tr>
+                        <tr><td><code>build()</code></td><td><code>Container</code></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- LifetimeScope -->
+            <section id="lifetime-scope" class="section" data-search="lifetimescope scene component inspector">
+                <h2>LifetimeScope <a href="#lifetime-scope" class="anchor">#</a></h2>
+                <p>Cocos Component для управления DI на уровне сцены.</p>
+
+                <h3>Inspector Properties</h3>
+                <table>
+                    <thead><tr><th>Property</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>enableLogging</code></td><td><code>true</code></td><td>Debug логи и трекинг вызовов</td></tr>
+                        <tr><td><code>autoInjectScene</code></td><td><code>true</code></td><td>Авто-инъекция @NeedInject компонентов</td></tr>
+                        <tr><td><code>autoInitialize</code></td><td><code>true</code></td><td>Вызывать initializeAll()</td></tr>
+                        <tr><td><code>autoStart</code></td><td><code>true</code></td><td>Вызывать startAll()</td></tr>
+                        <tr><td><code>enableTickManager</code></td><td><code>false</code></td><td>Включить ITickable поддержку</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Static Methods</h3>
+                <table>
+                    <thead><tr><th>Method</th><th>Returns</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>getSceneScope()</code></td><td><code>LifetimeScope | null</code></td></tr>
+                        <tr><td><code>findInScene()</code></td><td><code>LifetimeScope | null</code></td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Override</h3>
+                <pre><code><span class="code-decorator">@ccclass</span>(<span class="code-string">'GameLifetimeScope'</span>)<br><span class="code-keyword">class</span> <span class="code-type">GameLifetimeScope</span> <span class="code-keyword">extends</span> <span class="code-type">LifetimeScope</span> {<br>    <span class="code-decorator">@property</span>(GameProvider)<br>    gameProvider: <span class="code-type">GameProvider</span> = <span class="code-keyword">null</span>!;<br><br>    <span class="code-keyword">protected</span> <span class="code-function">configure</span>(builder: <span class="code-type">ContainerBuilder</span>): <span class="code-keyword">void</span> {<br>        builder.registerInstance(GameProvider, <span class="code-keyword">this</span>.gameProvider);<br>        builder.registerSingleton(GameService);<br>    }<br>}</code></pre>
+            </section>
+
+            <!-- Decorators -->
+            <section id="decorators" class="section" data-search="decorators injectable needinject injectproperty">
+                <h2>Decorators <a href="#decorators" class="anchor">#</a></h2>
+
+                <h3>@Injectable(dependencies)</h3>
+                <p>Помечает класс как сервис с constructor injection.</p>
+                <pre><code><span class="code-decorator">@Injectable</span>([ServiceA, ServiceB])<br><span class="code-keyword">class</span> <span class="code-type">MyService</span> {<br>    <span class="code-keyword">constructor</span>(<span class="code-keyword">private</span> a: <span class="code-type">ServiceA</span>, <span class="code-keyword">private</span> b: <span class="code-type">ServiceB</span>) {}<br>}</code></pre>
+
+                <h3>@NeedInject()</h3>
+                <p>Помечает Cocos Component для автоматической property injection.</p>
+                <pre><code><span class="code-decorator">@NeedInject</span>()<br><span class="code-decorator">@ccclass</span>(<span class="code-string">'MyController'</span>)<br><span class="code-keyword">class</span> <span class="code-type">MyController</span> <span class="code-keyword">extends</span> <span class="code-type">Component</span> { }</code></pre>
+
+                <h3>@InjectProperty(token)</h3>
+                <p>Помечает property для инъекции. Безопасен при наследовании — дочерний класс не мутирует метаданные родителя.</p>
+                <pre><code><span class="code-decorator">@InjectProperty</span>(AudioService)<br><span class="code-keyword">private</span> audio!: <span class="code-type">AudioService</span>;</code></pre>
+            </section>
+
+            <!-- Lifecycle Interfaces -->
+            <section id="interfaces" class="section" data-search="interfaces lifecycle initializable startable tickable disposable">
+                <h2>Lifecycle Interfaces <a href="#interfaces" class="anchor">#</a></h2>
+
+                <div class="callout callout-warning">
+                    <div class="callout-title">⚠️ Только для сервисов!</div>
+                    <p>Lifecycle интерфейсы работают только для зарегистрированных сервисов, НЕ для Cocos Components. Для компонентов используй обычные <code>start()</code>, <code>onDestroy()</code>.</p>
+                </div>
+
+                <table>
+                    <thead><tr><th>Interface</th><th>Marker</th><th>Method</th><th>When Called</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>IInitializable</code></td><td><code>INITIALIZABLE</code></td><td><code>onInitialize()</code></td><td>После resolveAll()</td></tr>
+                        <tr><td><code>IStartable</code></td><td><code>STARTABLE</code></td><td><code>onContainerStart()</code></td><td>После initialize, перед Cocos start()</td></tr>
+                        <tr><td><code>ITickable</code></td><td><code>TICKABLE</code></td><td><code>onTick(dt)</code></td><td>Каждый frame (enableTickManager)</td></tr>
+                        <tr><td><code>IFixedTickable</code></td><td><code>FIXED_TICKABLE</code></td><td><code>onFixedTick(dt)</code></td><td>Fixed interval (1/60s)</td></tr>
+                        <tr><td><code>ILateTickable</code></td><td><code>LATE_TICKABLE</code></td><td><code>onLateTick(dt)</code></td><td>После всех onTick</td></tr>
+                        <tr><td><code>IDisposable</code></td><td><code>DISPOSABLE</code></td><td><code>onDispose()</code></td><td>При уничтожении LifetimeScope</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Usage</h3>
+                <pre><code><span class="code-keyword">import</span> {<br>    Injectable,<br>    IInitializable, INITIALIZABLE,<br>    IDisposable, DISPOSABLE<br>} <span class="code-keyword">from</span> <span class="code-string">'./mini-di'</span>;<br><br><span class="code-decorator">@Injectable</span>([])<br><span class="code-keyword">class</span> <span class="code-type">AudioService</span> <span class="code-keyword">implements</span> <span class="code-type">IInitializable</span>, <span class="code-type">IDisposable</span> {<br>    [INITIALIZABLE] = <span class="code-keyword">true</span> <span class="code-keyword">as const</span>;  <span class="code-comment">// ← Required!</span><br>    [DISPOSABLE] = <span class="code-keyword">true</span> <span class="code-keyword">as const</span>;     <span class="code-comment">// ← Required!</span><br><br>    <span class="code-function">onInitialize</span>(): <span class="code-keyword">void</span> {<br>        console.log(<span class="code-string">'Audio ready'</span>);<br>    }<br><br>    <span class="code-function">onDispose</span>(): <span class="code-keyword">void</span> {<br>        console.log(<span class="code-string">'Audio cleanup'</span>);<br>    }<br>}</code></pre>
+            </section>
+
+            <!-- Logger -->
+            <section id="logger" class="section" data-search="logger logging debug tracking calls">
+                <h2>Logger <a href="#logger" class="anchor">#</a></h2>
+
+                <h3>Methods</h3>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>log(message, ...args)</code></td><td>Info log (if enabled)</td></tr>
+                        <tr><td><code>warn(message, ...args)</code></td><td>Warning log (if enabled)</td></tr>
+                        <tr><td><code>error(message, ...args)</code></td><td>Error log (always)</td></tr>
+                        <tr><td><code>trackCall(hookName)</code></td><td>Track call count, warn if &gt;1</td></tr>
+                        <tr><td><code>getCallCount(hookName)</code></td><td>Get call count</td></tr>
+                        <tr><td><code>resetCallCounts()</code></td><td>Reset all counters</td></tr>
+                        <tr><td><code>printCallStats()</code></td><td>Print statistics</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Production</h3>
+                <pre><code><span class="code-keyword">import</span> { Logger } <span class="code-keyword">from</span> <span class="code-string">'./mini-di'</span>;<br>Logger.enabled = <span class="code-keyword">false</span>;  <span class="code-comment">// Или через LifetimeScope.enableLogging в Inspector</span></code></pre>
+            </section>
+
+            <!-- InjectionToken -->
+            <section id="injection-token" class="section" data-search="injectiontoken interface abstract token">
+                <h2>InjectionToken <a href="#injection-token" class="anchor">#</a></h2>
+                <p>Для регистрации интерфейсов или абстракций.</p>
+
+                <pre><code><span class="code-comment">// Объявление</span><br><span class="code-keyword">interface</span> <span class="code-type">ILogger</span> {<br>    log(msg: <span class="code-type">string</span>): <span class="code-keyword">void</span>;<br>}<br><br><span class="code-keyword">const</span> LOGGER = <span class="code-keyword">new</span> <span class="code-type">InjectionToken</span>&lt;<span class="code-type">ILogger</span>&gt;(<span class="code-string">'Logger'</span>);<br><br><span class="code-comment">// Реализация</span><br><span class="code-decorator">@Injectable</span>([])<br><span class="code-keyword">class</span> <span class="code-type">ConsoleLogger</span> <span class="code-keyword">implements</span> <span class="code-type">ILogger</span> {<br>    <span class="code-function">log</span>(msg: <span class="code-type">string</span>): <span class="code-keyword">void</span> { console.log(msg); }<br>}<br><br><span class="code-comment">// Регистрация</span><br>builder.registerSingleton(LOGGER, ConsoleLogger);<br><br><span class="code-comment">// В компоненте</span><br><span class="code-decorator">@InjectProperty</span>(LOGGER)<br><span class="code-keyword">private</span> logger!: <span class="code-type">ILogger</span>;</code></pre>
+
+                <div class="callout callout-error">
+                    <div class="callout-title">⚠️ InjectionToken без реализации — v1.1.0</div>
+                    <p>Регистрация <code>InjectionToken</code> без <code>useClass</code>, <code>useFactory</code> или <code>useValue</code> теперь выбрасывает ошибку при регистрации, а не при resolve.</p>
+                </div>
+            </section>
+
+            <!-- Factories -->
+            <section id="factories" class="section" data-search="factories factory custom creation">
+                <h2>Factories <a href="#factories" class="anchor">#</a></h2>
+                <p>Кастомная логика создания instances.</p>
+
+                <pre><code>builder.registerFactory(ApiService, (container) => {<br>    <span class="code-keyword">const</span> config = container.resolve(ConfigService);<br>    <span class="code-keyword">const</span> logger = container.resolve(LOGGER);<br><br>    <span class="code-keyword">const</span> api = <span class="code-keyword">new</span> ApiService(config, logger);<br>    api.setBaseUrl(config.apiUrl);<br><br>    <span class="code-keyword">return</span> api;<br>});</code></pre>
+
+                <pre><code><span class="code-comment">// Transient factory</span><br>builder.registerFactory(<br>    BulletFactory,<br>    (c) => <span class="code-keyword">new</span> BulletFactory(c.resolve(PoolService)),<br>    Lifetime.Transient<br>);</code></pre>
+            </section>
+
+            <!-- TickManager -->
+            <section id="tick-manager" class="section" data-search="tickmanager update loop fixed late">
+                <h2>TickManager <a href="#tick-manager" class="anchor">#</a></h2>
+                <p>Управление update loop для сервисов. Включается через <code>enableTickManager = true</code> в LifetimeScope.</p>
+
+                <h3>Methods</h3>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>registerTickable(t)</code></td><td>Register for onTick</td></tr>
+                        <tr><td><code>registerFixedTickable(t)</code></td><td>Register for onFixedTick</td></tr>
+                        <tr><td><code>registerLateTickable(t)</code></td><td>Register for onLateTick</td></tr>
+                        <tr><td><code>unregisterTickable(t)</code></td><td>Unregister from tick</td></tr>
+                        <tr><td><code>clearAll()</code></td><td>Clear all registrations</td></tr>
+                        <tr><td><code>setFixedTimeStep(dt)</code></td><td>Set fixed interval (default 1/60)</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Changelog -->
+            <section id="changelog" class="section" data-search="changelog version history changes">
+                <h2>Changelog <a href="#changelog" class="anchor">#</a></h2>
+
+                <h3>v1.1.0 <span style="color:var(--text-muted);font-weight:400;font-size:0.85rem">— 2026-03-11</span></h3>
+
+                <h4>Fixed</h4>
+                <ul>
+                    <li><strong>InjectProperty inheritance bug</strong> — дочерний класс мутировал массив метаданных родителя. Теперь используется <code>hasOwnProperty</code> + копия массива.</li>
+                    <li><strong>getAllSingletons force-resolve</strong> — ранее создавал ВСЕ синглтоны включая неиспользованные. <code>disposeAll()</code> мог создать сервис только чтобы тут же его уничтожить.</li>
+                    <li><strong>InjectionToken guard</strong> — <code>register(token)</code> с <code>InjectionToken</code> без реализации теперь бросает ошибку при регистрации.</li>
+                    <li><strong>IInitializable async</strong> — убран <code>Promise&lt;void&gt;</code> из сигнатуры, т.к. <code>initializeAll()</code> синхронный.</li>
+                </ul>
+
+                <h4>Added</h4>
+                <ul>
+                    <li><code>Container.resolveAll()</code> — eager-resolve всех синглтонов. Вызывается <code>LifetimeScope</code> перед lifecycle.</li>
+                </ul>
+
+                <h3>v1.0.0 <span style="color:var(--text-muted);font-weight:400;font-size:0.85rem">— Initial release</span></h3>
+                <ul>
+                    <li>Core DI container with <code>@Injectable</code>, <code>@NeedInject</code>, <code>@InjectProperty</code></li>
+                    <li>LifetimeScope, TickManager, Cocos Extensions</li>
+                    <li>Lifecycle interfaces with Symbol markers</li>
+                    <li>Logger with call tracking</li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search documentation..." autocomplete="off">
+            </div>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+
+    <script>
+        const searchIndex = [];
+        document.querySelectorAll('.section').forEach(s => {
+            searchIndex.push({
+                id: s.id,
+                title: (s.querySelector('h1, h2')?.textContent || '').replace('#', '').trim(),
+                keywords: s.dataset.search || '',
+                content: s.textContent.toLowerCase()
+            });
+        });
+
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.section');
+
+        function updateActiveNav() {
+            let current = '';
+            sections.forEach(s => { if (s.getBoundingClientRect().top <= 100) current = s.id; });
+            navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current));
+        }
+        window.addEventListener('scroll', updateActiveNav);
+
+        const searchModal = document.getElementById('searchModal');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        let selectedIndex = -1;
+
+        function openSearch() {
+            searchModal.classList.add('active');
+            searchInput.focus();
+            searchInput.value = '';
+            searchResults.innerHTML = '';
+            selectedIndex = -1;
+        }
+
+        function closeSearch() { searchModal.classList.remove('active'); }
+
+        function performSearch(query) {
+            if (!query.trim()) { searchResults.innerHTML = ''; return; }
+            const q = query.toLowerCase();
+            const results = searchIndex.filter(i => i.title.toLowerCase().includes(q) || i.keywords.includes(q) || i.content.includes(q));
+            if (!results.length) { searchResults.innerHTML = '<div class="search-empty">No results</div>'; return; }
+            searchResults.innerHTML = results.map((item, i) =>
+                `<a href="#${item.id}" class="search-result ${i === 0 ? 'selected' : ''}" data-index="${i}" onclick="closeSearch()">
+                    <div class="search-result-title">${item.title.replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>')}</div>
+                    <div class="search-result-section">#${item.id}</div>
+                </a>`
+            ).join('');
+            selectedIndex = 0;
+        }
+
+        function updateSelection(idx) {
+            const items = searchResults.querySelectorAll('.search-result');
+            if (!items.length) return;
+            selectedIndex = Math.max(0, Math.min(idx, items.length - 1));
+            items.forEach((el, i) => el.classList.toggle('selected', i === selectedIndex));
+            items[selectedIndex]?.scrollIntoView({ block: 'nearest' });
+        }
+
+        searchInput.addEventListener('input', e => performSearch(e.target.value));
+        searchInput.addEventListener('keydown', e => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); updateSelection(selectedIndex + 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); updateSelection(selectedIndex - 1); }
+            else if (e.key === 'Enter') { searchResults.querySelector('.search-result.selected')?.click(); }
+            else if (e.key === 'Escape') { closeSearch(); }
+        });
+
+        searchModal.addEventListener('click', e => { if (e.target === searchModal) closeSearch(); });
+        document.addEventListener('keydown', e => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+            if (e.key === 'Escape' && searchModal.classList.contains('active')) closeSearch();
+        });
+    </script>
+</body>
+</html>
