@@ -7,21 +7,62 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Dark theme (default) — lifted backgrounds, better contrast */
         :root {
-            --bg-primary: #0a0b0f;
-            --bg-secondary: #12141c;
-            --bg-tertiary: #181b26;
-            --text-primary: #e2e4ed;
-            --text-secondary: #9196b0;
-            --text-muted: #6b7094;
+            --bg-primary: #141519;
+            --bg-secondary: #1c1d24;
+            --bg-tertiary: #24262e;
+            --text-primary: #ececf0;
+            --text-secondary: #a8aab8;
+            --text-muted: #7c7f92;
             --accent: #4f8fff;
             --accent-hover: #6ba0ff;
             --accent-purple: #9b6dff;
-            --border: #1e2130;
+            --border: #2c2e3a;
             --success: #3dd68c;
             --warning: #f0b232;
             --error: #f85149;
-            --code-bg: #0e1018;
+            --code-bg: #18191f;
+            --topbar-bg: rgba(20, 21, 25, 0.88);
+            --callout-info-bg: rgba(79, 143, 255, 0.08);
+            --callout-warn-bg: rgba(240, 178, 50, 0.08);
+            --callout-err-bg: rgba(248, 81, 73, 0.08);
+            --callout-ok-bg: rgba(61, 214, 140, 0.08);
+            --search-overlay: rgba(0, 0, 0, 0.6);
+            --code-comment: #7c7f92;
+            --code-keyword: #ff8b7e;
+            --code-string: #a5d6ff;
+            --code-type: #87c6ff;
+            --code-decorator: #c49bff;
+        }
+
+        /* Light theme — warm, no blue tint */
+        [data-theme="light"] {
+            --bg-primary: #f7f6f3;
+            --bg-secondary: #efeee9;
+            --bg-tertiary: #e6e5df;
+            --text-primary: #2c2c2e;
+            --text-secondary: #57575c;
+            --text-muted: #86868b;
+            --accent: #3068d0;
+            --accent-hover: #2458b8;
+            --accent-purple: #7c4dcc;
+            --border: #d8d7d2;
+            --success: #2a9d5c;
+            --warning: #c08a1e;
+            --error: #d43b33;
+            --code-bg: #eae9e4;
+            --topbar-bg: rgba(247, 246, 243, 0.9);
+            --callout-info-bg: rgba(48, 104, 208, 0.06);
+            --callout-warn-bg: rgba(192, 138, 30, 0.06);
+            --callout-err-bg: rgba(212, 59, 51, 0.06);
+            --callout-ok-bg: rgba(42, 157, 92, 0.06);
+            --search-overlay: rgba(0, 0, 0, 0.25);
+            --code-comment: #86868b;
+            --code-keyword: #c43030;
+            --code-string: #2a6fb3;
+            --code-type: #1a6fb5;
+            --code-decorator: #7c4dcc;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,7 +79,7 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             height: 44px;
-            background: rgba(10, 11, 15, 0.85);
+            background: var(--topbar-bg);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             z-index: 100;
@@ -78,7 +119,7 @@
         }
 
         .topbar-plugin:hover { color: var(--text-primary); background: var(--bg-tertiary); }
-        .topbar-plugin.active { color: var(--accent); background: rgba(79, 143, 255, 0.1); }
+        .topbar-plugin.active { color: var(--accent); background: var(--callout-info-bg); }
 
         /* Layout */
         .container { display: flex; min-height: 100vh; padding-top: 44px; }
@@ -151,7 +192,7 @@
         .nav-link.active {
             color: var(--accent);
             border-left-color: var(--accent);
-            background: rgba(79, 143, 255, 0.06);
+            background: var(--callout-info-bg);
         }
 
         /* Search trigger */
@@ -196,7 +237,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: var(--search-overlay);
             z-index: 1000;
             align-items: flex-start;
             justify-content: center;
@@ -252,7 +293,7 @@
 
         .search-result-title { font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
         .search-result-section { font-size: 0.78rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
-        .search-result mark { background: rgba(79, 143, 255, 0.25); color: var(--accent); border-radius: 2px; }
+        .search-result mark { background: var(--callout-info-bg); color: var(--accent); border-radius: 2px; }
         .search-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); }
 
         /* Typography */
@@ -293,13 +334,13 @@
             line-height: 1.75;
         }
 
-        .code-comment { color: var(--text-muted); }
-        .code-keyword { color: #ff7b72; }
-        .code-string { color: #a5d6ff; }
-        .code-type { color: #79c0ff; }
-        .code-decorator { color: #c49bff; }
-        .code-function { color: #c49bff; }
-        .code-number { color: #79c0ff; }
+        .code-comment { color: var(--code-comment); }
+        .code-keyword { color: var(--code-keyword); }
+        .code-string { color: var(--code-string); }
+        .code-type { color: var(--code-type); }
+        .code-decorator { color: var(--code-decorator); }
+        .code-function { color: var(--code-decorator); }
+        .code-number { color: var(--code-type); }
 
         /* Tables */
         table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 0.88rem; }
@@ -328,10 +369,10 @@
         }
 
         .callout-title { font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-        .callout-info { background: rgba(79, 143, 255, 0.07); border-color: var(--accent); }
-        .callout-warning { background: rgba(240, 178, 50, 0.07); border-color: var(--warning); }
-        .callout-error { background: rgba(248, 81, 73, 0.07); border-color: var(--error); }
-        .callout-success { background: rgba(61, 214, 140, 0.07); border-color: var(--success); }
+        .callout-info { background: var(--callout-info-bg); border-color: var(--accent); }
+        .callout-warning { background: var(--callout-warn-bg); border-color: var(--warning); }
+        .callout-error { background: var(--callout-err-bg); border-color: var(--error); }
+        .callout-success { background: var(--callout-ok-bg); border-color: var(--success); }
 
         /* Comparison */
         .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 18px 0; }
@@ -360,6 +401,30 @@
         .anchor { color: var(--text-muted); text-decoration: none; margin-left: 8px; opacity: 0; transition: opacity 0.15s; }
         h2:hover .anchor, h3:hover .anchor { opacity: 1; }
 
+        /* Theme toggle */
+        .theme-toggle {
+            margin-left: auto;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle:hover { border-color: var(--accent); color: var(--text-primary); }
+
+        /* Smooth transition */
+        body, .sidebar, .topbar, .search-container, .comparison-box,
+        pre, code, table, th, td, .callout, .nav-link, .search-trigger {
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+
         /* Responsive */
         @media (max-width: 900px) {
             .sidebar { display: none; }
@@ -377,6 +442,9 @@
         <a href="./" class="topbar-plugin active">MiniDI</a>
         <a href="#" class="topbar-plugin" style="opacity:0.35;pointer-events:none">ScenarioSystem</a>
         <a href="#" class="topbar-plugin" style="opacity:0.35;pointer-events:none">NodeAnimator</a>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+            <span class="theme-icon">☀️</span>
+        </button>
     </div>
 
     <div class="container">
@@ -886,6 +954,25 @@ git clone https://github.com/SardorAkh/mini-di.git</code></pre>
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
             if (e.key === 'Escape' && searchModal.classList.contains('active')) closeSearch();
         });
+        // Theme
+        function getPreferredTheme() {
+            const saved = localStorage.getItem('toolkit-theme');
+            if (saved) return saved;
+            return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            document.querySelector('.theme-icon').textContent = theme === 'light' ? '🌙' : '☀️';
+            localStorage.setItem('toolkit-theme', theme);
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            applyTheme(current === 'dark' ? 'light' : 'dark');
+        }
+
+        applyTheme(getPreferredTheme());
     </script>
 </body>
 </html>
