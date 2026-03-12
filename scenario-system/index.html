@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScenarioSystem — Documentation</title>
+    <script>
+    (function(){
+        var t=localStorage.getItem('toolkit-theme');
+        var l=localStorage.getItem('toolkit-lang');
+        if(!t) t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
+        if(!l){var n=(navigator.language||'');l=n.startsWith('zh')?'zh':n.startsWith('ru')?'ru':'en';}
+        document.documentElement.setAttribute('data-theme',t);
+        document.documentElement.setAttribute('data-lang',l);
+    })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg-primary:#141519;--bg-secondary:#1c1d24;--bg-tertiary:#24262e;--text-primary:#ececf0;--text-secondary:#a8aab8;--text-muted:#7c7f92;--accent:#4f8fff;--accent-hover:#6ba0ff;--accent-purple:#9b6dff;--border:#2c2e3a;--success:#3dd68c;--warning:#f0b232;--error:#f85149;--code-bg:#18191f;--topbar-bg:rgba(20,21,25,.88);--ci:rgba(79,143,255,.08);--cw:rgba(240,178,50,.08);--ce:rgba(248,81,73,.08);--co:rgba(61,214,140,.08);--search-overlay:rgba(0,0,0,.6);--cc:#7c7f92;--ck:#ff8b7e;--cs:#a5d6ff;--ct:#87c6ff;--cd:#c49bff}
+        [data-theme="light"]{--bg-primary:#f7f6f3;--bg-secondary:#efeee9;--bg-tertiary:#e6e5df;--text-primary:#2c2c2e;--text-secondary:#57575c;--text-muted:#86868b;--accent:#3068d0;--accent-hover:#2458b8;--accent-purple:#7c4dcc;--border:#d8d7d2;--success:#2a9d5c;--warning:#c08a1e;--error:#d43b33;--code-bg:#eae9e4;--topbar-bg:rgba(247,246,243,.9);--ci:rgba(48,104,208,.06);--cw:rgba(192,138,30,.06);--ce:rgba(212,59,51,.06);--co:rgba(42,157,92,.06);--search-overlay:rgba(0,0,0,.25);--cc:#86868b;--ck:#c43030;--cs:#2a6fb3;--ct:#1a6fb5;--cd:#7c4dcc}
+        [data-lang="en"] .lang-ru,[data-lang="en"] .lang-zh,[data-lang="ru"] .lang-en,[data-lang="ru"] .lang-zh,[data-lang="zh"] .lang-en,[data-lang="zh"] .lang-ru{display:none!important}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Outfit',sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6}
+        .topbar{position:fixed;top:0;left:0;right:0;height:44px;background:var(--topbar-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);z-index:100;display:flex;align-items:center;padding:0 20px;gap:20px;font-size:.82rem}
+        .topbar-home{font-weight:600;color:var(--text-muted);text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;transition:color .15s}
+        .topbar-home:hover{color:var(--text-primary)}
+        .topbar-sep{width:1px;height:18px;background:var(--border)}
+        .topbar-plugin{font-size:.85rem;color:var(--text-muted);text-decoration:none;padding:4px 10px;border-radius:6px;transition:all .15s}
+        .topbar-plugin:hover{color:var(--text-primary);background:var(--bg-tertiary)}
+        .topbar-plugin.active{color:var(--accent);background:var(--ci)}
+        .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+        .topbar-gh{color:var(--text-muted);transition:color .15s;display:flex;align-items:center}
+        .topbar-gh:hover{color:var(--text-primary)}
+        .ctrl-btn{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--text-muted);font-size:.82rem;font-family:'JetBrains Mono',monospace;line-height:1;transition:all .15s;display:flex;align-items:center}
+        .ctrl-btn:hover{border-color:var(--accent);color:var(--text-primary)}
+        .container{display:flex;min-height:100vh;padding-top:44px}
+        .sidebar{width:260px;background:var(--bg-secondary);border-right:1px solid var(--border);position:fixed;top:44px;height:calc(100vh - 44px);overflow-y:auto;padding:24px 0}
+        .sidebar::-webkit-scrollbar{width:4px}
+        .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+        .sidebar-header{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+        .sidebar-header h1{font-size:1.4rem;font-weight:600;display:flex;align-items:center;gap:10px}
+        .sidebar-header h1 span{background:linear-gradient(135deg,var(--accent),var(--accent-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .version{font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--text-muted);margin-top:6px}
+        .nav-section{margin-bottom:20px}
+        .nav-section-title{font-size:.65rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);padding:10px 20px 5px}
+        .nav-link{display:block;padding:7px 20px;color:var(--text-muted);text-decoration:none;font-size:.88rem;transition:all .12s;border-left:2px solid transparent}
+        .nav-link:hover{color:var(--text-primary);background:var(--bg-tertiary)}
+        .nav-link.active{color:var(--accent);border-left-color:var(--accent);background:var(--ci)}
+        .search-trigger{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:0 16px 16px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);cursor:pointer;font-size:.85rem;font-family:'Outfit',sans-serif;transition:all .15s}
+        .search-trigger:hover{border-color:var(--accent);color:var(--text-secondary)}
+        .search-trigger kbd{margin-left:auto;background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:.7rem;font-family:'JetBrains Mono',monospace;border:1px solid var(--border)}
+        .main{margin-left:260px;flex:1;padding:48px 64px;max-width:920px}
+        .search-modal{display:none;position:fixed;inset:0;background:var(--search-overlay);z-index:1000;align-items:flex-start;justify-content:center;padding-top:100px}
+        .search-modal.active{display:flex}
+        .search-container{width:560px;background:var(--bg-secondary);border-radius:14px;border:1px solid var(--border);overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.5)}
+        .search-input-wrapper{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);gap:12px}
+        .search-input-wrapper svg{color:var(--text-muted);flex-shrink:0}
+        .search-input{flex:1;background:none;border:none;color:var(--text-primary);font-size:1.05rem;font-family:'Outfit',sans-serif;outline:none}
+        .search-input::placeholder{color:var(--text-muted)}
+        .search-results{max-height:380px;overflow-y:auto}
+        .search-result{display:block;padding:12px 18px;color:var(--text-secondary);text-decoration:none;border-bottom:1px solid var(--border);transition:all .1s}
+        .search-result:hover,.search-result.selected{background:var(--bg-tertiary);color:var(--text-primary)}
+        .search-result-title{font-weight:500;color:var(--text-primary);margin-bottom:2px}
+        .search-result-section{font-size:.78rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+        .search-result mark{background:var(--ci);color:var(--accent);border-radius:2px}
+        .search-empty{padding:40px 20px;text-align:center;color:var(--text-muted)}
+        h1,h2,h3,h4{color:var(--text-primary);margin-bottom:14px}
+        h1{font-size:2rem;margin-bottom:8px}
+        h2{font-size:1.5rem;margin-top:56px;padding-top:24px;border-top:1px solid var(--border)}
+        h3{font-size:1.15rem;margin-top:32px;color:var(--text-secondary)}
+        h4{font-size:.95rem;margin-top:22px;font-weight:500}
+        .section{margin-bottom:36px}
+        .section>p{color:var(--text-secondary);margin-bottom:18px}
+        .subtitle{font-size:1.05rem;color:var(--text-secondary);margin-bottom:28px;font-weight:300}
+        code{background:var(--code-bg);padding:2px 7px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:.82em;color:var(--accent)}
+        pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:18px 20px;overflow-x:auto;margin:14px 0}
+        pre code{background:none;padding:0;color:var(--text-primary);font-size:.8rem;line-height:1.75}
+        .cc{color:var(--cc)}.ck{color:var(--ck)}.cs{color:var(--cs)}.ct{color:var(--ct)}.cd{color:var(--cd)}
+        table{width:100%;border-collapse:collapse;margin:18px 0;font-size:.88rem}
+        th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--border)}
+        th{background:var(--bg-secondary);color:var(--text-muted);font-weight:500;font-size:.72rem;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.5px}
+        td code{font-size:.82em}
+        .callout{padding:16px 20px;border-radius:10px;margin:18px 0;border-left:4px solid;font-size:.92rem}
+        .callout-title{font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+        .callout-info{background:var(--ci);border-color:var(--accent)}
+        .callout-warning{background:var(--cw);border-color:var(--warning)}
+        .callout-error{background:var(--ce);border-color:var(--error)}
+        .callout-success{background:var(--co);border-color:var(--success)}
+        .comparison{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+        .comparison-box{background:var(--bg-secondary);border-radius:10px;padding:18px;border:1px solid var(--border)}
+        .comparison-box h4{margin-top:0;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .comparison-box.do h4{color:var(--success)}
+        .comparison-box.dont h4{color:var(--error)}
+        .badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:.72rem;font-weight:500;font-family:'JetBrains Mono',monospace}
+        .badge-new{background:rgba(61,214,140,.15);color:var(--success)}
+        ul,ol{margin:14px 0;padding-left:24px;color:var(--text-secondary)}
+        li{margin:7px 0}
+        li code{font-size:.82em}
+        .anchor{color:var(--text-muted);text-decoration:none;margin-left:8px;opacity:0;transition:opacity .15s}
+        h2:hover .anchor,h3:hover .anchor{opacity:1}
+        body,.sidebar,.topbar,.search-container,.comparison-box,pre,code,table,th,td,.callout,.nav-link,.search-trigger,.ctrl-btn{transition:background-color .2s,color .2s,border-color .2s}
+        @media(max-width:900px){.sidebar{display:none}.main{margin-left:0;padding:24px 20px}.comparison{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="../" class="topbar-home">Toolkit</a>
+        <div class="topbar-sep"></div>
+        <a href="../mini-di/" class="topbar-plugin">MiniDI</a>
+        <a href="./" class="topbar-plugin active">ScenarioSystem</a>
+        <div class="topbar-right">
+            <a href="https://github.com/SardorAkh/scenario-system" target="_blank" class="topbar-gh" title="GitHub">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            </a>
+            <button class="ctrl-btn" onclick="cycleLang()" title="Language"><span class="lang-icon">EN</span></button>
+            <button class="ctrl-btn" onclick="toggleTheme()" title="Theme"><span class="theme-icon">☀️</span></button>
+        </div>
+    </div>
+
+    <div class="container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>🎬 <span>ScenarioSystem</span></h1>
+                <div class="version">v1.0.0 · Cocos Creator 3.8.x</div>
+            </div>
+            <div class="search-trigger" onclick="openSearch()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Search... <kbd>⌘K</kbd>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title"><span class="lang-en">Getting Started</span><span class="lang-ru">Начало</span><span class="lang-zh">快速开始</span></div>
+                <a href="#overview" class="nav-link active">Overview</a>
+                <a href="#installation" class="nav-link">Installation</a>
+                <a href="#quick-start" class="nav-link">Quick Start</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title"><span class="lang-en">Core</span><span class="lang-ru">Ядро</span><span class="lang-zh">核心</span></div>
+                <a href="#scenario-runner" class="nav-link">ScenarioRunner</a>
+                <a href="#scenario-builder" class="nav-link">ScenarioBuilder</a>
+                <a href="#base-step" class="nav-link">BaseStep</a>
+                <a href="#step-options" class="nav-link">StepOptions</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title"><span class="lang-en">Built-in Steps</span><span class="lang-ru">Встроенные степы</span><span class="lang-zh">内置步骤</span></div>
+                <a href="#timing-steps" class="nav-link">Timing</a>
+                <a href="#input-steps" class="nav-link">Input</a>
+                <a href="#animation-steps" class="nav-link">Animation</a>
+                <a href="#flow-steps" class="nav-link">Flow Control</a>
+                <a href="#utility-steps" class="nav-link">Utility</a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title"><span class="lang-en">Advanced</span><span class="lang-ru">Продвинутое</span><span class="lang-zh">进阶</span></div>
+                <a href="#promise-helper" class="nav-link">PromiseHelper</a>
+                <a href="#custom-steps" class="nav-link">Custom Steps</a>
+                <a href="#step-factories" class="nav-link">Step Factories</a>
+                <a href="#performance" class="nav-link">Performance Tracker</a>
+                <a href="#errors" class="nav-link">Error Types</a>
+                <a href="#changelog" class="nav-link">Changelog</a>
+            </div>
+        </nav>
+
+        <main class="main">
+
+            <!-- ═══ OVERVIEW ═══ -->
+            <section id="overview" class="section" data-search="overview introduction what is scenario system">
+                <h1>ScenarioSystem</h1>
+                <p class="subtitle">
+                    <span class="lang-en">Async step runner for Cocos Creator 3.8.x Playable Ads</span>
+                    <span class="lang-ru">Async step runner для Cocos Creator 3.8.x Playable Ads</span>
+                    <span class="lang-zh">面向 Cocos Creator 3.8.x 试玩广告的异步步骤运行器</span>
+                </p>
+                <p>
+                    <span class="lang-en">ScenarioSystem is a linear async/await scenario runner for managing sequential game flows. Lifecycle-safe, abort-aware, ~1.5KB gzipped.</span>
+                    <span class="lang-ru">ScenarioSystem — линейный async/await runner сценариев для управления последовательными игровыми потоками. Lifecycle-safe, с поддержкой abort, ~1.5KB gzip.</span>
+                    <span class="lang-zh">ScenarioSystem 是一个线性 async/await 场景运行器，用于管理顺序游戏流程。生命周期安全，支持中止，gzip 后约 1.5KB。</span>
+                </p>
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 <span class="lang-en">Design philosophy</span><span class="lang-ru">Принцип проектирования</span><span class="lang-zh">设计理念</span></div>
+                    <p>
+                        <span class="lang-en">No timeouts by default. In playable ads, the player decides when to act — the system should never skip a step because of inactivity. Set <code>timeoutMs</code> explicitly only where needed.</span>
+                        <span class="lang-ru">Нет таймаутов по умолчанию. В playable ads игрок сам решает когда действовать — система не должна пропускать шаг из-за бездействия. Ставь <code>timeoutMs</code> явно только где нужно.</span>
+                        <span class="lang-zh">默认无超时。在试玩广告中，玩家决定何时操作——系统不应因不活动而跳过步骤。仅在需要时显式设置 <code>timeoutMs</code>。</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- ═══ INSTALLATION ═══ -->
+            <section id="installation" class="section" data-search="installation setup git submodule">
+                <h2>Installation <a href="#installation" class="anchor">#</a></h2>
+                <h4>Git Submodule</h4>
+                <pre><code>cd your-project/assets/scripts/plugins
+git submodule add https://github.com/SardorAkh/scenario-system.git</code></pre>
+                <h4><span class="lang-en">Update</span><span class="lang-ru">Обновление</span><span class="lang-zh">更新</span></h4>
+                <pre><code>git submodule update --remote assets/scripts/plugins/scenario-system
+git add assets/scripts/plugins/scenario-system
+git commit -m <span class="cs">"Update scenario-system"</span></code></pre>
+                <h4><span class="lang-en">Structure</span><span class="lang-ru">Структура</span><span class="lang-zh">结构</span></h4>
+                <pre><code>assets/scripts/plugins/scenario-system/
+├── IScenarioStep.ts
+├── BuiltInSteps.ts
+├── ScenarioRunner.ts
+├── PromiseHelper.ts
+├── PerformanceTracker.ts
+└── index.ts</code></pre>
+            </section>
+
+            <!-- ═══ QUICK START ═══ -->
+            <section id="quick-start" class="section" data-search="quick start example tutorial basic">
+                <h2>Quick Start <a href="#quick-start" class="anchor">#</a></h2>
+                <pre><code><span class="ck">import</span> { ScenarioRunner, createScenario, WaitStep, CallbackStep, WaitForInputStep } <span class="ck">from</span> <span class="cs">"./ScenarioSystem"</span>;<br><br><span class="cd">@ccclass</span>(<span class="cs">"GamePlayable"</span>)<br><span class="ck">class</span> <span class="ct">GamePlayable</span> <span class="ck">extends</span> <span class="ct">Component</span> {<br>    <span class="cd">@property</span>(<span class="ct">Node</span>) startBtn: <span class="ct">Node</span> = <span class="ck">null</span>!;<br>    <span class="ck">private</span> runner!: <span class="ct">ScenarioRunner</span>;<br><br>    <span class="ck">protected</span> <span class="cd">start</span>(): <span class="ck">void</span> {<br>        <span class="ck">this</span>.runner = <span class="ck">this</span>.addComponent(<span class="ct">ScenarioRunner</span>);<br><br>        createScenario()<br>            .wait(<span class="cs">1</span>)<br>            .waitForInput(<span class="ck">this</span>.startBtn)<br>            .call(() => console.log(<span class="cs">"Game started!"</span>))<br>            .debug(<span class="ck">true</span>)<br>            .buildAndRun(<span class="ck">this</span>.runner);<br>    }<br><br>    <span class="ck">protected</span> <span class="cd">onDestroy</span>(): <span class="ck">void</span> {<br>        <span class="ck">this</span>.runner?.abort();<br>    }<br>}</code></pre>
+            </section>
+
+            <!-- ═══ SCENARIO RUNNER ═══ -->
+            <section id="scenario-runner" class="section" data-search="scenariorunner runner component orchestrator">
+                <h2>ScenarioRunner <a href="#scenario-runner" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Cocos Component that orchestrates step execution. One runner per scenario.</span>
+                    <span class="lang-ru">Cocos Component, управляющий исполнением степов. Один runner на сценарий.</span>
+                    <span class="lang-zh">管理步骤执行的 Cocos 组件。每个场景一个 runner。</span>
+                </p>
+
+                <h4>Properties</h4>
+                <table>
+                    <thead><tr><th>Property</th><th>Type</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>isRunning</code></td><td><code><span class="ct">boolean</span></code></td><td><span class="lang-en">Scenario in progress</span><span class="lang-ru">Сценарий выполняется</span><span class="lang-zh">场景正在执行</span></td></tr>
+                        <tr><td><code>currentStep</code></td><td><code><span class="ct">IScenarioStep</span> | <span class="ck">null</span></code></td><td><span class="lang-en">Currently running step</span><span class="lang-ru">Текущий выполняемый степ</span><span class="lang-zh">当前执行的步骤</span></td></tr>
+                        <tr><td><code>progress</code></td><td><code><span class="ct">number</span></code></td><td><span class="lang-en">0–1 completion ratio</span><span class="lang-ru">Прогресс 0–1</span><span class="lang-zh">0–1 完成度</span></td></tr>
+                    </tbody>
+                </table>
+
+                <h4>Methods</h4>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>configure(options)</code></td><td><span class="lang-en">Set runner options</span><span class="lang-ru">Настроить runner</span><span class="lang-zh">设置 runner 选项</span></td></tr>
+                        <tr><td><code>addStep(step)</code></td><td><span class="lang-en">Append a step</span><span class="lang-ru">Добавить степ</span><span class="lang-zh">追加步骤</span></td></tr>
+                        <tr><td><code>addSteps(...steps)</code></td><td><span class="lang-en">Append multiple steps</span><span class="lang-ru">Добавить несколько степов</span><span class="lang-zh">追加多个步骤</span></td></tr>
+                        <tr><td><code>clearSteps()</code></td><td><span class="lang-en">Remove all steps</span><span class="lang-ru">Очистить все степы</span><span class="lang-zh">清除所有步骤</span></td></tr>
+                        <tr><td><code>run()</code></td><td><code><span class="ct">Promise</span>&lt;<span class="ck">void</span>&gt;</code></td></tr>
+                        <tr><td><code>abort()</code></td><td><span class="lang-en">Cancel execution</span><span class="lang-ru">Отменить выполнение</span><span class="lang-zh">取消执行</span></td></tr>
+                        <tr><td><code>getReport()</code></td><td><span class="lang-en">Get performance report</span><span class="lang-ru">Получить отчёт</span><span class="lang-zh">获取性能报告</span></td></tr>
+                        <tr><td><code>getFormattedReport()</code></td><td><span class="lang-en">Get formatted string</span><span class="lang-ru">Форматированный отчёт</span><span class="lang-zh">获取格式化报告</span></td></tr>
+                    </tbody>
+                </table>
+
+                <h4>ScenarioRunnerOptions</h4>
+                <table>
+                    <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>debug</code></td><td><code><span class="ck">false</span></code></td><td><span class="lang-en">Enable logging</span><span class="lang-ru">Включить логи</span><span class="lang-zh">启用日志</span></td></tr>
+                        <tr><td><code>slowThresholdMs</code></td><td><code>100</code></td><td><span class="lang-en">Bottleneck threshold</span><span class="lang-ru">Порог замедления</span><span class="lang-zh">瓶颈阈值</span></td></tr>
+                        <tr><td><code>continueOnError</code></td><td><code><span class="ck">false</span></code></td><td><span class="lang-en">Skip failed non-critical steps</span><span class="lang-ru">Пропускать упавшие некритичные степы</span><span class="lang-zh">跳过失败的非关键步骤</span></td></tr>
+                        <tr><td><code>disableTimeouts</code></td><td><code><span class="ck">false</span></code></td><td><span class="lang-en">Globally disable all timeouts</span><span class="lang-ru">Глобально отключить все таймауты</span><span class="lang-zh">全局禁用所有超时</span></td></tr>
+                        <tr><td><code>onStepStart</code></td><td>—</td><td><code>(step, index) => <span class="ck">void</span></code></td></tr>
+                        <tr><td><code>onStepComplete</code></td><td>—</td><td><code>(step, index, success, error?) => <span class="ck">void</span></code></td></tr>
+                        <tr><td><code>onScenarioComplete</code></td><td>—</td><td><code>(success) => <span class="ck">void</span></code></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ═══ SCENARIO BUILDER ═══ -->
+            <section id="scenario-builder" class="section" data-search="scenariobuilder builder fluent api createScenario">
+                <h2>ScenarioBuilder <a href="#scenario-builder" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Fluent API for composing scenarios. Create via <code>createScenario()</code>.</span>
+                    <span class="lang-ru">Fluent API для сборки сценариев. Создаётся через <code>createScenario()</code>.</span>
+                    <span class="lang-zh">用于组合场景的 Fluent API。通过 <code>createScenario()</code> 创建。</span>
+                </p>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>addStep(step)</code></td><td><span class="lang-en">Add any step</span><span class="lang-ru">Добавить любой степ</span><span class="lang-zh">添加任意步骤</span></td></tr>
+                        <tr><td><code>call(fn, options?)</code></td><td><span class="lang-en">Shorthand for <code>CallbackStep</code></span><span class="lang-ru">Сокращение для <code>CallbackStep</code></span><span class="lang-zh"><code>CallbackStep</code> 的简写</span></td></tr>
+                        <tr><td><code>wait(seconds)</code></td><td><span class="lang-en">Shorthand for <code>WaitStep</code></span><span class="lang-ru">Сокращение для <code>WaitStep</code></span><span class="lang-zh"><code>WaitStep</code> 的简写</span></td></tr>
+                        <tr><td><code>waitForInput(node, event?)</code></td><td><span class="lang-en">Shorthand for <code>WaitForInputStep</code></span><span class="lang-ru">Сокращение для <code>WaitForInputStep</code></span><span class="lang-zh"><code>WaitForInputStep</code> 的简写</span></td></tr>
+                        <tr><td><code>setActive(node, active)</code></td><td><span class="lang-en">Shorthand for <code>SetActiveStep</code></span><span class="lang-ru">Сокращение для <code>SetActiveStep</code></span><span class="lang-zh"><code>SetActiveStep</code> 的简写</span></td></tr>
+                        <tr><td><code>fade(node, opacity, dur)</code></td><td><span class="lang-en">Shorthand for <code>FadeStep</code></span><span class="lang-ru">Сокращение для <code>FadeStep</code></span><span class="lang-zh"><code>FadeStep</code> 的简写</span></td></tr>
+                        <tr><td><code>debug(enabled)</code></td><td><span class="lang-en">Toggle debug logging</span><span class="lang-ru">Вкл/выкл дебаг логи</span><span class="lang-zh">开关调试日志</span></td></tr>
+                        <tr><td><code>continueOnError(enabled)</code></td><td><span class="lang-en">Toggle continue on error</span><span class="lang-ru">Вкл/выкл продолжение при ошибке</span><span class="lang-zh">开关出错继续</span></td></tr>
+                        <tr><td><code>disableTimeouts(enabled)</code></td><td><span class="lang-en">Toggle global timeout disable</span><span class="lang-ru">Вкл/выкл отключение таймаутов</span><span class="lang-zh">开关全局超时禁用</span></td></tr>
+                        <tr><td><code>build(runner)</code></td><td><span class="lang-en">Configure runner, return it</span><span class="lang-ru">Сконфигурировать runner</span><span class="lang-zh">配置 runner 并返回</span></td></tr>
+                        <tr><td><code>buildAndRun(runner)</code></td><td><code><span class="ct">Promise</span>&lt;<span class="ck">void</span>&gt;</code></td></tr>
+                    </tbody>
+                </table>
+                <pre><code><span class="ck">await</span> createScenario()<br>    .wait(<span class="cs">1</span>)<br>    .waitForInput(startBtn)<br>    .call(() => <span class="ck">this</span>.startGame())<br>    .setActive(tutorialUI, <span class="ck">false</span>)<br>    .fade(gameUI, <span class="cs">255</span>, <span class="cs">0.3</span>)<br>    .debug(<span class="ck">true</span>)<br>    .buildAndRun(runner);</code></pre>
+            </section>
+
+            <!-- ═══ BASE STEP ═══ -->
+            <section id="base-step" class="section" data-search="basestep abstract step execute abort">
+                <h2>BaseStep <a href="#base-step" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Abstract base class for all steps. Extend <code>doExecute()</code> for custom logic.</span>
+                    <span class="lang-ru">Абстрактный базовый класс всех степов. Расширяй <code>doExecute()</code> для своей логики.</span>
+                    <span class="lang-zh">所有步骤的抽象基类。扩展 <code>doExecute()</code> 实现自定义逻辑。</span>
+                </p>
+                <table>
+                    <thead><tr><th>Protected API</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>this.signal</code></td><td><span class="lang-en"><code>AbortSignal</code> linked to runner — use in all async ops</span><span class="lang-ru"><code>AbortSignal</code> связан с runner'ом — юзай во всех async операциях</span><span class="lang-zh"><code>AbortSignal</code> 关联到 runner——在所有异步操作中使用</span></td></tr>
+                        <tr><td><code>this.isAborted</code></td><td><span class="lang-en">Quick check if aborted</span><span class="lang-ru">Быстрая проверка на abort</span><span class="lang-zh">快速检查是否已中止</span></td></tr>
+                        <tr><td><code>this.throwIfAborted()</code></td><td><span class="lang-en">Throw <code>StepAbortedError</code> if aborted</span><span class="lang-ru">Бросить <code>StepAbortedError</code> если абортнут</span><span class="lang-zh">如果已中止则抛出 <code>StepAbortedError</code></span></td></tr>
+                        <tr><td><code>this.isNodeValid(node)</code></td><td><span class="lang-en">Safe node validity check</span><span class="lang-ru">Безопасная проверка ноды</span><span class="lang-zh">安全的节点有效性检查</span></td></tr>
+                    </tbody>
+                </table>
+                <div class="callout callout-warning">
+                    <div class="callout-title">⚠️ <span class="lang-en">Abort is linked automatically</span><span class="lang-ru">Abort линкуется автоматически</span><span class="lang-zh">Abort 自动关联</span></div>
+                    <p>
+                        <span class="lang-en"><code>BaseStep.execute()</code> links the step's internal <code>AbortController</code> to <code>context.signal</code>. When runner aborts, the step's <code>this.signal</code> fires automatically. No need to create your own <code>AbortController</code>.</span>
+                        <span class="lang-ru"><code>BaseStep.execute()</code> линкует внутренний <code>AbortController</code> степа к <code>context.signal</code>. Когда runner абортится — <code>this.signal</code> степа сработает автоматически. Не нужно создавать свой <code>AbortController</code>.</span>
+                        <span class="lang-zh"><code>BaseStep.execute()</code> 将步骤内部的 <code>AbortController</code> 关联到 <code>context.signal</code>。当 runner 中止时，步骤的 <code>this.signal</code> 会自动触发。无需创建自己的 <code>AbortController</code>。</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- ═══ STEP OPTIONS ═══ -->
+            <section id="step-options" class="section" data-search="stepoptions timeout retry critical options">
+                <h2>StepOptions <a href="#step-options" class="anchor">#</a></h2>
+                <table>
+                    <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>name</code></td><td><span class="lang-en">class name</span><span class="lang-ru">имя класса</span><span class="lang-zh">类名</span></td><td><span class="lang-en">Step identifier for logging</span><span class="lang-ru">Идентификатор степа для логов</span><span class="lang-zh">用于日志的步骤标识符</span></td></tr>
+                        <tr><td><code>critical</code></td><td><code><span class="ck">false</span></code></td><td><span class="lang-en">Stop scenario on failure</span><span class="lang-ru">Остановить сценарий при ошибке</span><span class="lang-zh">失败时停止场景</span></td></tr>
+                        <tr><td><code>maxRetries</code></td><td><code>0</code></td><td><span class="lang-en">Retry count with exponential backoff</span><span class="lang-ru">Кол-во повторов с exponential backoff</span><span class="lang-zh">指数退避重试次数</span></td></tr>
+                        <tr><td><code>timeoutMs</code></td><td><code>0</code></td><td><span class="lang-en">Timeout in ms (0 = no timeout)</span><span class="lang-ru">Таймаут в мс (0 = нет)</span><span class="lang-zh">超时毫秒数（0 = 无超时）</span></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ═══ TIMING STEPS ═══ -->
+            <section id="timing-steps" class="section" data-search="wait timing delay frames waituntil condition">
+                <h2>Timing Steps <a href="#timing-steps" class="anchor">#</a></h2>
+                <pre><code><span class="ck">new</span> <span class="ct">WaitStep</span>(seconds: <span class="ct">number</span>)<br><span class="ck">new</span> <span class="ct">WaitFramesStep</span>(frameCount: <span class="ct">number</span>)<br><span class="ck">new</span> <span class="ct">WaitUntilStep</span>(condition: () => <span class="ct">boolean</span>, pollIntervalMs?: <span class="ct">number</span>)</code></pre>
+                <p>
+                    <span class="lang-en"><code>WaitUntilStep</code> polls the condition every <code>pollIntervalMs</code> (default 16ms). Respects <code>timeoutMs</code> from step options if set.</span>
+                    <span class="lang-ru"><code>WaitUntilStep</code> проверяет условие каждые <code>pollIntervalMs</code> (по умолчанию 16ms). Уважает <code>timeoutMs</code> из опций степа если задан.</span>
+                    <span class="lang-zh"><code>WaitUntilStep</code> 每 <code>pollIntervalMs</code>（默认 16ms）轮询条件。如果设置了 <code>timeoutMs</code> 则会生效。</span>
+                </p>
+            </section>
+
+            <!-- ═══ INPUT STEPS ═══ -->
+            <section id="input-steps" class="section" data-search="input touch click waitforinput">
+                <h2>Input Steps <a href="#input-steps" class="anchor">#</a></h2>
+                <pre><code><span class="cc">// Single node</span><br><span class="ck">new</span> <span class="ct">WaitForInputStep</span>(node: <span class="ct">Node</span>)<br><br><span class="cc">// Multiple nodes (any resolves)</span><br><span class="ck">new</span> <span class="ct">WaitForInputStep</span>([nodeA, nodeB], <span class="ct">Node</span>.EventType.TOUCH_END, {}, (index, node, event) => {<br>    console.log(<span class="cs">`Tapped node ${index}`</span>);<br>})</code></pre>
+                <p>
+                    <span class="lang-en">Waits for touch/click on one or more nodes. Resolves on the first input. The optional callback receives the index of the touched node.</span>
+                    <span class="lang-ru">Ждёт тач/клик на одну или несколько нод. Резолвится по первому инпуту. Опциональный callback получает индекс нажатой ноды.</span>
+                    <span class="lang-zh">等待一个或多个节点上的触摸/点击。第一个输入即解析。可选回调接收被触摸节点的索引。</span>
+                </p>
+            </section>
+
+            <!-- ═══ ANIMATION STEPS ═══ -->
+            <section id="animation-steps" class="section" data-search="animation tween fade tweenstep tweennode">
+                <h2>Animation Steps <a href="#animation-steps" class="anchor">#</a></h2>
+                <pre><code><span class="cc">// Tween any object property</span><br><span class="ck">new</span> <span class="ct">TweenStep</span>&lt;<span class="ct">T</span>&gt;(target, duration, props)<br><br><span class="cc">// Tween node transform</span><br><span class="ck">new</span> <span class="ct">TweenNodeStep</span>(node, duration, {<br>    position?: <span class="ct">Vec3</span>,<br>    scale?: <span class="ct">number</span> | <span class="ct">Vec3</span>,<br>    angle?: <span class="ct">number</span>,<br>    easing?: <span class="ct">TweenEasing</span><br>})<br><br><span class="cc">// Fade opacity (auto-adds UIOpacity)</span><br><span class="ck">new</span> <span class="ct">FadeStep</span>(node, targetOpacity, duration)</code></pre>
+                <div class="callout callout-success">
+                    <div class="callout-title">✅ <span class="lang-en">Lifecycle-safe</span><span class="lang-ru">Lifecycle-safe</span><span class="lang-zh">生命周期安全</span></div>
+                    <p>
+                        <span class="lang-en">All animation steps use <code>PromiseHelper.tweenTo()</code> internally — tweens are registered in cleanup registry and auto-stopped on node destruction or abort.</span>
+                        <span class="lang-ru">Все анимационные степы используют <code>PromiseHelper.tweenTo()</code> — твины зарегистрированы в cleanup registry и авто-останавливаются при уничтожении ноды или abort.</span>
+                        <span class="lang-zh">所有动画步骤内部使用 <code>PromiseHelper.tweenTo()</code>——补间动画注册在清理注册表中，在节点销毁或中止时自动停止。</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- ═══ FLOW CONTROL STEPS ═══ -->
+            <section id="flow-steps" class="section" data-search="flow control parallel sequence conditional repeat callback setactive">
+                <h2>Flow Control Steps <a href="#flow-steps" class="anchor">#</a></h2>
+                <table>
+                    <thead><tr><th>Step</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>CallbackStep(fn)</code></td><td><span class="lang-en">Execute sync or async callback</span><span class="lang-ru">Выполнить sync/async callback</span><span class="lang-zh">执行同步或异步回调</span></td></tr>
+                        <tr><td><code>SetActiveStep(node, bool)</code></td><td><span class="lang-en">Show/hide node</span><span class="lang-ru">Показать/скрыть ноду</span><span class="lang-zh">显示/隐藏节点</span></td></tr>
+                        <tr><td><code>ParallelStep(steps, failFast?)</code></td><td><span class="lang-en">Run steps concurrently</span><span class="lang-ru">Параллельный запуск степов</span><span class="lang-zh">并行执行步骤</span></td></tr>
+                        <tr><td><code>SequenceStep(steps)</code></td><td><span class="lang-en">Nested sequential execution</span><span class="lang-ru">Вложенная последовательность</span><span class="lang-zh">嵌套顺序执行</span></td></tr>
+                        <tr><td><code>ConditionalStep(cond, trueStep, falseStep?)</code></td><td><span class="lang-en">Branch by condition</span><span class="lang-ru">Ветвление по условию</span><span class="lang-zh">按条件分支</span></td></tr>
+                        <tr><td><code>RepeatStep(factory, count)</code></td><td><span class="lang-en">Repeat N times</span><span class="lang-ru">Повторить N раз</span><span class="lang-zh">重复 N 次</span></td></tr>
+                        <tr><td><code>RepeatUntilStep(factory, cond, max?)</code></td><td><span class="lang-en">Repeat until condition</span><span class="lang-ru">Повторять до условия</span><span class="lang-zh">重复直到条件满足</span></td></tr>
+                    </tbody>
+                </table>
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 ParallelStep + failFast</div>
+                    <p>
+                        <span class="lang-en">When <code>failFast = true</code>, the first error aborts all sibling steps automatically. Without failFast, all steps run to completion and errors are collected.</span>
+                        <span class="lang-ru">При <code>failFast = true</code> первая ошибка автоматически абортит все параллельные степы. Без failFast все степы выполняются до конца, ошибки собираются.</span>
+                        <span class="lang-zh">当 <code>failFast = true</code> 时，第一个错误会自动中止所有并行步骤。不使用 failFast 时，所有步骤运行到完成，错误会被收集。</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- ═══ UTILITY STEPS ═══ -->
+            <section id="utility-steps" class="section" data-search="utility log noop">
+                <h2>Utility Steps <a href="#utility-steps" class="anchor">#</a></h2>
+                <pre><code><span class="ck">new</span> <span class="ct">LogStep</span>(<span class="cs">"hello"</span>)                  <span class="cc">// static message</span><br><span class="ck">new</span> <span class="ct">LogStep</span>(() => <span class="cs">`score: ${score}`</span>)  <span class="cc">// dynamic message</span><br><span class="ck">new</span> <span class="ct">NoOpStep</span>()                         <span class="cc">// placeholder / else branch</span></code></pre>
+            </section>
+
+            <!-- ═══ PROMISE HELPER ═══ -->
+            <section id="promise-helper" class="section" data-search="promisehelper async wait tween event lifecycle safe cleanup">
+                <h2>PromiseHelper <a href="#promise-helper" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Safe async utilities that respect Cocos lifecycle. All operations auto-cleanup on node destruction.</span>
+                    <span class="lang-ru">Безопасные async-утилиты, уважающие lifecycle Cocos. Все операции авто-очищаются при уничтожении ноды.</span>
+                    <span class="lang-zh">尊重 Cocos 生命周期的安全异步工具。所有操作在节点销毁时自动清理。</span>
+                </p>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>wait(component, seconds, signal?)</code></td><td><span class="lang-en">Wait via <code>component.schedule</code></span><span class="lang-ru">Ожидание через <code>component.schedule</code></span><span class="lang-zh">通过 <code>component.schedule</code> 等待</span></td></tr>
+                        <tr><td><code>waitFrames(component, count, signal?)</code></td><td><span class="lang-en">Wait exact frame count</span><span class="lang-ru">Ожидание N кадров</span><span class="lang-zh">等待精确帧数</span></td></tr>
+                        <tr><td><code>waitUntil(component, cond, options?)</code></td><td><span class="lang-en">Poll condition at interval</span><span class="lang-ru">Проверка условия с интервалом</span><span class="lang-zh">按间隔轮询条件</span></td></tr>
+                        <tr><td><code>tweenTo(component, target, dur, props, signal?, easing?)</code></td><td><span class="lang-en">Lifecycle-safe tween</span><span class="lang-ru">Lifecycle-safe твин</span><span class="lang-zh">生命周期安全的补间动画</span></td></tr>
+                        <tr><td><code>waitForEvent(component, node, event, signal?)</code></td><td><span class="lang-en">Wait for node event</span><span class="lang-ru">Ожидание события ноды</span><span class="lang-zh">等待节点事件</span></td></tr>
+                        <tr><td><code>withTimeout(promise, ms, name)</code></td><td><span class="lang-en">Wrap promise with timeout</span><span class="lang-ru">Обернуть промис таймаутом</span><span class="lang-zh">为 Promise 添加超时</span></td></tr>
+                        <tr><td><code>parallel(promises, options?)</code></td><td><span class="lang-en">ES2017 allSettled polyfill</span><span class="lang-ru">ES2017 allSettled полифилл</span><span class="lang-zh">ES2017 allSettled 兼容</span></td></tr>
+                        <tr><td><code>cleanupAll(component)</code></td><td><span class="lang-en">Cancel all pending ops for component</span><span class="lang-ru">Отменить все ожидающие операции</span><span class="lang-zh">取消组件的所有待处理操作</span></td></tr>
+                    </tbody>
+                </table>
+                <div class="comparison">
+                    <div class="comparison-box do">
+                        <h4>✅ <span class="lang-en">Correct</span><span class="lang-ru">Правильно</span><span class="lang-zh">正确</span></h4>
+                        <pre><code><span class="ck">await</span> <span class="ct">PromiseHelper</span>.wait(<br>    context.component, <span class="cs">1</span>, <span class="ck">this</span>.signal<br>);</code></pre>
+                    </div>
+                    <div class="comparison-box dont">
+                        <h4>❌ <span class="lang-en">Wrong</span><span class="lang-ru">Неправильно</span><span class="lang-zh">错误</span></h4>
+                        <pre><code><span class="cc">// Raw setTimeout — no cleanup,</span><br><span class="cc">// no abort, no lifecycle safety</span><br><span class="ck">await new</span> <span class="ct">Promise</span>(r =><br>    setTimeout(r, <span class="cs">1000</span>)<br>);</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ CUSTOM STEPS ═══ -->
+            <section id="custom-steps" class="section" data-search="custom step extend doexecute abort signal">
+                <h2>Custom Steps <a href="#custom-steps" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Extend <code>BaseStep</code>. Use <code>this.signal</code> for abort, <code>PromiseHelper</code> for async.</span>
+                    <span class="lang-ru">Расширяй <code>BaseStep</code>. Используй <code>this.signal</code> для abort, <code>PromiseHelper</code> для async.</span>
+                    <span class="lang-zh">扩展 <code>BaseStep</code>。使用 <code>this.signal</code> 进行中止，<code>PromiseHelper</code> 进行异步操作。</span>
+                </p>
+                <pre><code><span class="ck">class</span> <span class="ct">ShowRewardStep</span> <span class="ck">extends</span> <span class="ct">BaseStep</span> {<br>    <span class="ck">constructor</span>(<br>        <span class="ck">private</span> rewardNode: <span class="ct">Node</span>,<br>        <span class="ck">private</span> coins: <span class="ct">number</span>,<br>        options: <span class="ct">Partial</span>&lt;<span class="ct">StepOptions</span>&gt; = {}<br>    ) {<br>        <span class="ck">super</span>({ name: <span class="cs">"ShowReward"</span>, ...options });<br>    }<br><br>    <span class="ck">protected async</span> <span class="cd">doExecute</span>(context: <span class="ct">StepContext</span>): <span class="ct">Promise</span>&lt;<span class="ck">void</span>&gt; {<br>        <span class="ck">this</span>.throwIfAborted();<br>        <span class="ck">this</span>.rewardNode.active = <span class="ck">true</span>;<br><br>        <span class="ck">const</span> label = <span class="ck">this</span>.rewardNode.getComponent(<span class="ct">Label</span>);<br>        label.string = <span class="cs">`+${<span class="ck">this</span>.coins} coins!`</span>;<br><br>        <span class="ck">await</span> <span class="ct">PromiseHelper</span>.wait(context.component, <span class="cs">2</span>, <span class="ck">this</span>.signal);<br>    }<br>}</code></pre>
+                <div class="callout callout-error">
+                    <div class="callout-title">⚠️ <span class="lang-en">Rules for custom steps</span><span class="lang-ru">Правила для кастомных степов</span><span class="lang-zh">自定义步骤规则</span></div>
+                    <p>
+                        <span class="lang-en">Use <code>this.signal</code>, not your own <code>AbortController</code>. Use <code>PromiseHelper</code>, not raw <code>setTimeout</code>/<code>setInterval</code>. Override <code>abort()</code> only to clean up external resources — always call <code>super.abort()</code>.</span>
+                        <span class="lang-ru">Используй <code>this.signal</code>, а не свой <code>AbortController</code>. Используй <code>PromiseHelper</code>, а не голый <code>setTimeout</code>/<code>setInterval</code>. Переопределяй <code>abort()</code> только для очистки внешних ресурсов — всегда вызывай <code>super.abort()</code>.</span>
+                        <span class="lang-zh">使用 <code>this.signal</code>，而不是自己的 <code>AbortController</code>。使用 <code>PromiseHelper</code>，而不是原生 <code>setTimeout</code>/<code>setInterval</code>。仅在清理外部资源时覆盖 <code>abort()</code>——始终调用 <code>super.abort()</code>。</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- ═══ STEP FACTORIES ═══ -->
+            <section id="step-factories" class="section" data-search="step factory pattern pack camera merge">
+                <h2>Step Factories <a href="#step-factories" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Group related steps into factories. Captures shared dependencies, keeps scenarios clean.</span>
+                    <span class="lang-ru">Группируй связанные степы в фабрики. Захватывает зависимости, сценарии остаются чистыми.</span>
+                    <span class="lang-zh">将相关步骤分组到工厂中。捕获共享依赖，保持场景简洁。</span>
+                </p>
+                <pre><code><span class="cc">// CameraSteps.ts</span><br><span class="ck">export function</span> <span class="cd">cameraSteps</span>(service: <span class="ct">CameraZoomService</span>) {<br>    <span class="ck">return</span> {<br>        <span class="cd">zoomTo</span>(target: <span class="ct">Node</span>, zoomLevel = <span class="cs">1.5</span>, duration = <span class="cs">0.5</span>) {<br>            <span class="ck">return new</span> <span class="ct">ZoomToTargetStep</span>(service, target, zoomLevel, duration);<br>        },<br>        <span class="cd">reset</span>(duration = <span class="cs">0.5</span>) {<br>            <span class="ck">return new</span> <span class="ct">ResetCameraStep</span>(service, duration);<br>        }<br>    };<br>}</code></pre>
+
+                <h4><span class="lang-en">Usage with DI</span><span class="lang-ru">Использование с DI</span><span class="lang-zh">配合 DI 使用</span></h4>
+                <pre><code><span class="cd">@NeedInject</span>()<br><span class="cd">@ccclass</span>(<span class="cs">"MergePlayable"</span>)<br><span class="ck">class</span> <span class="ct">MergePlayable</span> <span class="ck">extends</span> <span class="ct">Component</span> {<br>    <span class="cd">@InjectProperty</span>(<span class="ct">CameraZoomService</span>)<br>    <span class="ck">private</span> cameraZoom!: <span class="ct">CameraZoomService</span>;<br><br>    <span class="ck">private</span> runner!: <span class="ct">ScenarioRunner</span>;<br>    <span class="ck">private</span> cam!: <span class="ct">ReturnType</span>&lt;<span class="ck">typeof</span> cameraSteps&gt;;<br><br>    <span class="ck">protected</span> <span class="cd">start</span>(): <span class="ck">void</span> {<br>        <span class="ck">this</span>.runner = <span class="ck">this</span>.addComponent(<span class="ct">ScenarioRunner</span>);<br>        <span class="ck">this</span>.cam = cameraSteps(<span class="ck">this</span>.cameraZoom);<br><br>        createScenario()<br>            .addStep(<span class="ck">this</span>.cam.zoomTo(<span class="ck">this</span>.character, <span class="cs">2.0</span>, <span class="cs">0</span>))<br>            .wait(<span class="cs">1.5</span>)<br>            .addStep(<span class="ck">this</span>.cam.reset(<span class="cs">0.8</span>))<br>            .call(() => <span class="ck">this</span>.showCTA())<br>            .debug(<span class="ck">true</span>)<br>            .buildAndRun(<span class="ck">this</span>.runner);<br>    }<br>}</code></pre>
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 <span class="lang-en">Keep ScenarioSystem clean</span><span class="lang-ru">Держи ScenarioSystem чистым</span><span class="lang-zh">保持 ScenarioSystem 纯净</span></div>
+                    <p>
+                        <span class="lang-en">Don't bundle domain steps (camera, merge, animation) into ScenarioSystem. Keep them as separate step-packs — each project picks what it needs.</span>
+                        <span class="lang-ru">Не пакуй доменные степы (камера, мёрж, анимация) в ScenarioSystem. Держи их как отдельные step-packs — каждый проект берёт что нужно.</span>
+                        <span class="lang-zh">不要将领域步骤（相机、合并、动画）打包到 ScenarioSystem 中。将它们作为独立的 step-packs——每个项目选择所需的。</span>
+                    </p>
+                </div>
+            </section>
+
+            <!-- ═══ PERFORMANCE ═══ -->
+            <section id="performance" class="section" data-search="performance tracker report bottleneck profiling">
+                <h2>Performance Tracker <a href="#performance" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Built-in profiling with bottleneck detection. Enabled via <code>debug: true</code>.</span>
+                    <span class="lang-ru">Встроенный профайлинг с детекцией узких мест. Включается через <code>debug: true</code>.</span>
+                    <span class="lang-zh">内置瓶颈检测分析。通过 <code>debug: true</code> 启用。</span>
+                </p>
+                <pre><code>runner.configure({ debug: <span class="ck">true</span>, slowThresholdMs: <span class="cs">100</span> });<br><span class="ck">await</span> runner.run();<br>console.log(runner.getFormattedReport());</code></pre>
+                <pre><code><span class="cc">═══════════════════════════════════════</span><br><span class="cc">       Scenario Performance Report</span><br><span class="cc">═══════════════════════════════════════</span><br><span class="cc">Total Duration: 15.32s</span><br><span class="cc">Steps: 8 (✓ 8 / ✗ 0)</span><br><span class="cc">Average Step Time: 1.92s</span><br><span class="cc">─────────────── Step Breakdown ───────────────</span><br><span class="cc">  ✓ IntroAnimation: 2.10s (13.7%) ⚠️</span><br><span class="cc">  ✓ WaitForClick: 0.03s (0.2%)</span><br><span class="cc">  ✓ WaitForMerge: 12.80s (83.6%)</span><br><span class="cc">─────────────── Bottlenecks ───────────────</span><br><span class="cc">  ⚠️ IntroAnimation: 2.10s (13.7% of total)</span></code></pre>
+
+                <h4>ScenarioReport</h4>
+                <table>
+                    <thead><tr><th>Field</th><th>Type</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>totalDuration</code></td><td><code><span class="ct">number</span></code></td></tr>
+                        <tr><td><code>stepCount</code></td><td><code><span class="ct">number</span></code></td></tr>
+                        <tr><td><code>successCount</code></td><td><code><span class="ct">number</span></code></td></tr>
+                        <tr><td><code>failureCount</code></td><td><code><span class="ct">number</span></code></td></tr>
+                        <tr><td><code>steps</code></td><td><code><span class="ct">StepMetrics</span>[]</code></td></tr>
+                        <tr><td><code>bottlenecks</code></td><td><code><span class="ct">StepMetrics</span>[]</code></td></tr>
+                        <tr><td><code>averageStepTime</code></td><td><code><span class="ct">number</span></code></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ═══ ERRORS ═══ -->
+            <section id="errors" class="section" data-search="error types abort timeout destroyed">
+                <h2>Error Types <a href="#errors" class="anchor">#</a></h2>
+                <table>
+                    <thead><tr><th>Error</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>StepAbortedError</code></td><td><span class="lang-en">Step was aborted via <code>runner.abort()</code></span><span class="lang-ru">Степ абортнут через <code>runner.abort()</code></span><span class="lang-zh">步骤通过 <code>runner.abort()</code> 被中止</span></td></tr>
+                        <tr><td><code>StepTimeoutError</code></td><td><span class="lang-en">Step exceeded <code>timeoutMs</code></span><span class="lang-ru">Степ превысил <code>timeoutMs</code></span><span class="lang-zh">步骤超过 <code>timeoutMs</code></span></td></tr>
+                        <tr><td><code>NodeDestroyedError</code></td><td><span class="lang-en">Node destroyed during async operation</span><span class="lang-ru">Нода уничтожена во время async операции</span><span class="lang-zh">异步操作期间节点被销毁</span></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ═══ CHANGELOG ═══ -->
+            <section id="changelog" class="section" data-search="changelog version history">
+                <h2>Changelog <a href="#changelog" class="anchor">#</a></h2>
+
+                <h3>v1.0.0 <span class="badge badge-new">latest</span></h3>
+                <h4><span class="lang-en">Core</span><span class="lang-ru">Ядро</span><span class="lang-zh">核心</span></h4>
+                <ul>
+                    <li><span class="lang-en">Async/await scenario runner with step-based orchestration</span><span class="lang-ru">Async/await scenario runner со step-based оркестрацией</span><span class="lang-zh">基于步骤编排的 async/await 场景运行器</span></li>
+                    <li><span class="lang-en">Built-in steps: Wait, Input, Tween, Parallel, Sequence, Conditional, Repeat</span><span class="lang-ru">Встроенные степы: Wait, Input, Tween, Parallel, Sequence, Conditional, Repeat</span><span class="lang-zh">内置步骤：Wait、Input、Tween、Parallel、Sequence、Conditional、Repeat</span></li>
+                    <li><span class="lang-en">PromiseHelper — lifecycle-safe async utilities with cleanup registry</span><span class="lang-ru">PromiseHelper — lifecycle-safe async утилиты с cleanup registry</span><span class="lang-zh">PromiseHelper——带有清理注册表的生命周期安全异步工具</span></li>
+                    <li><span class="lang-en">PerformanceTracker — profiling with bottleneck detection</span><span class="lang-ru">PerformanceTracker — профайлинг с детекцией узких мест</span><span class="lang-zh">PerformanceTracker——带有瓶颈检测的性能分析</span></li>
+                </ul>
+                <h4><span class="lang-en">Design decisions</span><span class="lang-ru">Архитектурные решения</span><span class="lang-zh">设计决策</span></h4>
+                <ul>
+                    <li><strong>timeoutMs: 0</strong> — <span class="lang-en">no timeout by default. Playable ads should never skip a step because of player inactivity.</span><span class="lang-ru">нет таймаута по умолчанию. Playable ads не должны пропускать шаг из-за бездействия игрока.</span><span class="lang-zh">默认无超时。试玩广告不应因玩家不活动而跳过步骤。</span></li>
+                    <li><strong>Linked AbortController</strong> — <span class="lang-en">step's <code>this.signal</code> is auto-linked to runner's signal. Single abort chain, no race conditions.</span><span class="lang-ru"><code>this.signal</code> степа авто-линкуется к signal'у runner'а. Единая цепочка abort, без race conditions.</span><span class="lang-zh">步骤的 <code>this.signal</code> 自动关联到 runner 信号。单一中止链，无竞态条件。</span></li>
+                    <li><strong>ParallelStep failFast</strong> — <span class="lang-en">aborts all sibling steps on first error</span><span class="lang-ru">абортит все параллельные степы при первой ошибке</span><span class="lang-zh">第一个错误时中止所有并行步骤</span></li>
+                    <li><strong>All tweens via PromiseHelper</strong> — <span class="lang-en">registered in cleanup registry, auto-stopped on node destruction or abort</span><span class="lang-ru">зарегистрированы в cleanup registry, авто-останавливаются при уничтожении ноды или abort</span><span class="lang-zh">注册在清理注册表中，在节点销毁或中止时自动停止</span></li>
+                </ul>
+                <h4>ScenarioBuilder shorthands</h4>
+                <ul>
+                    <li><code>.call()</code>, <code>.wait()</code>, <code>.waitForInput()</code>, <code>.setActive()</code>, <code>.fade()</code></li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <div class="search-modal" id="searchModal">
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search..." autocomplete="off">
+            </div>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+
+    <script>
+        var langs=['en','ru','zh'],langLabels={en:'EN',ru:'RU',zh:'中文'};
+        function applyTheme(t){document.documentElement.setAttribute('data-theme',t);document.querySelector('.theme-icon').textContent=t==='light'?'🌙':'☀️';localStorage.setItem('toolkit-theme',t)}
+        function toggleTheme(){var c=document.documentElement.getAttribute('data-theme')||'dark';applyTheme(c==='dark'?'light':'dark')}
+        function applyLang(l){document.documentElement.setAttribute('data-lang',l);document.querySelector('.lang-icon').textContent=langLabels[l];localStorage.setItem('toolkit-lang',l)}
+        function cycleLang(){var c=document.documentElement.getAttribute('data-lang')||'en';applyLang(langs[(langs.indexOf(c)+1)%langs.length])}
+
+        var searchIndex=[];
+        document.querySelectorAll('.section').forEach(function(s){searchIndex.push({id:s.id,title:(s.querySelector('h1,h2')||{}).textContent.replace('#','').trim(),keywords:s.dataset.search||'',content:s.textContent.toLowerCase()})});
+        var navLinks=document.querySelectorAll('.nav-link');
+        var sections=document.querySelectorAll('.section');
+        function updateActiveNav(){var c='';sections.forEach(function(s){if(s.getBoundingClientRect().top<=100)c=s.id});navLinks.forEach(function(l){l.classList.toggle('active',l.getAttribute('href')==='#'+c)})}
+        window.addEventListener('scroll',updateActiveNav);
+        var searchModal=document.getElementById('searchModal'),searchInput=document.getElementById('searchInput'),searchResults=document.getElementById('searchResults'),selectedIndex=-1;
+        function openSearch(){searchModal.classList.add('active');searchInput.focus();searchInput.value='';searchResults.innerHTML='';selectedIndex=-1}
+        function closeSearch(){searchModal.classList.remove('active')}
+        function performSearch(q){if(!q.trim()){searchResults.innerHTML='';return}var ql=q.toLowerCase();var r=searchIndex.filter(function(i){return i.title.toLowerCase().includes(ql)||i.keywords.includes(ql)||i.content.includes(ql)});if(!r.length){searchResults.innerHTML='<div class="search-empty">No results</div>';return}searchResults.innerHTML=r.map(function(item,i){return'<a href="#'+item.id+'" class="search-result '+(i===0?'selected':'')+'" onclick="closeSearch()"><div class="search-result-title">'+item.title+'</div><div class="search-result-section">#'+item.id+'</div></a>'}).join('');selectedIndex=0}
+        function updateSelection(idx){var items=searchResults.querySelectorAll('.search-result');if(!items.length)return;selectedIndex=Math.max(0,Math.min(idx,items.length-1));items.forEach(function(el,i){el.classList.toggle('selected',i===selectedIndex)});items[selectedIndex].scrollIntoView({block:'nearest'})}
+        searchInput.addEventListener('input',function(e){performSearch(e.target.value)});
+        searchInput.addEventListener('keydown',function(e){if(e.key==='ArrowDown'){e.preventDefault();updateSelection(selectedIndex+1)}else if(e.key==='ArrowUp'){e.preventDefault();updateSelection(selectedIndex-1)}else if(e.key==='Enter'){var s=searchResults.querySelector('.search-result.selected');if(s)s.click()}else if(e.key==='Escape')closeSearch()});
+        searchModal.addEventListener('click',function(e){if(e.target===searchModal)closeSearch()});
+        document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch()}if(e.key==='Escape'&&searchModal.classList.contains('active'))closeSearch()});
+        (function(){var t=document.documentElement.getAttribute('data-theme')||'dark';var l=document.documentElement.getAttribute('data-lang')||'en';document.querySelector('.theme-icon').textContent=t==='light'?'🌙':'☀️';document.querySelector('.lang-icon').textContent=langLabels[l]})();
+    </script>
+</body>
+</html>
