@@ -3,304 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sardor's Cocos Creator Toolkit</title>
+    <title>Cocos Playables Toolkit</title>
+    <script>
+    (function(){
+        var t=localStorage.getItem('toolkit-theme');
+        var l=localStorage.getItem('toolkit-lang');
+        if(!t) t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark';
+        if(!l){var n=(navigator.language||'');l=n.startsWith('zh')?'zh':n.startsWith('ru')?'ru':'en';}
+        document.documentElement.setAttribute('data-theme',t);
+        document.documentElement.setAttribute('data-lang',l);
+    })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #141519;
-            --bg-card: #1c1d24;
-            --bg-card-hover: #24262e;
-            --border: #2c2e3a;
-            --text: #ececf0;
-            --text-dim: #7c7f92;
-            --accent-blue: #4f8fff;
-            --accent-purple: #9b6dff;
-            --accent-green: #3dd68c;
-            --accent-orange: #ff8f4f;
+            --bg: #141519; --bg-card: #1c1d24; --bg-card-hover: #24262e;
+            --border: #2c2e3a; --text: #ececf0; --text-dim: #7c7f92;
+            --accent-blue: #4f8fff; --accent-purple: #9b6dff;
+            --accent-green: #3dd68c; --accent-orange: #ff8f4f;
         }
-
         [data-theme="light"] {
-            --bg: #f7f6f3;
-            --bg-card: #efeee9;
-            --bg-card-hover: #e6e5df;
-            --border: #d8d7d2;
-            --text: #2c2c2e;
-            --text-dim: #86868b;
-            --accent-blue: #3068d0;
-            --accent-purple: #7c4dcc;
-            --accent-green: #2a9d5c;
-            --accent-orange: #d06a2a;
+            --bg: #f7f6f3; --bg-card: #efeee9; --bg-card-hover: #e6e5df;
+            --border: #d8d7d2; --text: #2c2c2e; --text-dim: #86868b;
+            --accent-blue: #3068d0; --accent-purple: #7c4dcc;
+            --accent-green: #2a9d5c; --accent-orange: #d06a2a;
         }
+        [data-lang="en"] .lang-ru,[data-lang="en"] .lang-zh,
+        [data-lang="ru"] .lang-en,[data-lang="ru"] .lang-zh,
+        [data-lang="zh"] .lang-en,[data-lang="zh"] .lang-ru{display:none!important}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
-
-        .noise {
-            position: fixed;
-            inset: 0;
-            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 80px 40px 60px;
-            position: relative;
-            z-index: 1;
-        }
-
-        header { margin-bottom: 80px; }
-
-        .title-line {
-            font-size: 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--text-dim);
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
-
-        h1 {
-            font-size: 3.2rem;
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 20px;
-            letter-spacing: -1px;
-        }
-
-        h1 .gradient {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .subtitle {
-            font-size: 1.15rem;
-            color: var(--text-dim);
-            font-weight: 300;
-            line-height: 1.6;
-            max-width: 560px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 32px;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.25s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            opacity: 0;
-            transition: opacity 0.25s;
-        }
-
-        .card:hover {
-            background: var(--bg-card-hover);
-            border-color: #2a2e44;
-            transform: translateY(-2px);
-        }
-
-        .card:hover::before { opacity: 1; }
-
-        .card-blue::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
-        .card-green::before { background: linear-gradient(90deg, var(--accent-green), #2dd4bf); }
-        .card-orange::before { background: linear-gradient(90deg, var(--accent-orange), #ff6b9d); }
-        .card-purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
-
-        .card-icon {
-            font-size: 1.8rem;
-            margin-bottom: 16px;
-        }
-
-        .card h2 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .card p {
-            font-size: 0.9rem;
-            color: var(--text-dim);
-            line-height: 1.5;
-            margin-bottom: 16px;
-        }
-
-        .card-meta {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .tag {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: rgba(79, 143, 255, 0.1);
-            color: var(--accent-blue);
-            border: 1px solid rgba(79, 143, 255, 0.15);
-        }
-
-        .tag-green {
-            background: rgba(61, 214, 140, 0.1);
-            color: var(--accent-green);
-            border-color: rgba(61, 214, 140, 0.15);
-        }
-
-        .tag-dim {
-            background: rgba(107, 112, 148, 0.1);
-            color: var(--text-dim);
-            border-color: rgba(107, 112, 148, 0.15);
-        }
-
-        .card-soon {
-            opacity: 0.45;
-            pointer-events: none;
-        }
-
-        footer {
-            margin-top: 80px;
-            padding-top: 30px;
-            border-top: 1px solid var(--border);
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        footer a {
-            color: var(--accent-blue);
-            text-decoration: none;
-        }
-
-        [data-theme="light"] .noise { opacity: 0.4; }
-
-        .theme-toggle {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 10;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 8px 12px;
-            cursor: pointer;
-            color: var(--text-dim);
-            font-size: 1.05rem;
-            line-height: 1;
-            transition: all 0.15s;
-        }
-
-        .theme-toggle:hover { border-color: var(--accent-blue); color: var(--text); }
-
-        body, .card, footer, .tag {
-            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-        }
-
-        @media (max-width: 700px) {
-            .grid { grid-template-columns: 1fr; }
-            h1 { font-size: 2.2rem; }
-            .container { padding: 40px 20px; }
-        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+        .noise{position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+        [data-theme="light"] .noise{opacity:0.4}
+        .controls{position:fixed;top:24px;right:24px;z-index:10;display:flex;gap:8px}
+        .ctrl-btn{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:7px 12px;cursor:pointer;color:var(--text-dim);font-size:0.82rem;font-family:'JetBrains Mono',monospace;line-height:1;transition:all .15s;display:flex;align-items:center;gap:5px}
+        .ctrl-btn:hover{border-color:var(--accent-blue);color:var(--text)}
+        .container{max-width:960px;margin:0 auto;padding:80px 40px 60px;position:relative;z-index:1}
+        header{margin-bottom:80px}
+        .title-line{font-size:.75rem;font-family:'JetBrains Mono',monospace;color:var(--text-dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px}
+        h1{font-size:3.2rem;font-weight:700;line-height:1.1;margin-bottom:20px;letter-spacing:-1px}
+        h1 .gradient{background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .subtitle{font-size:1.15rem;color:var(--text-dim);font-weight:300;line-height:1.6;max-width:560px}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+        .card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:32px;text-decoration:none;color:inherit;transition:all .25s;position:relative;overflow:hidden}
+        .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:opacity .25s}
+        .card:hover{background:var(--bg-card-hover);transform:translateY(-2px)}
+        .card:hover::before{opacity:1}
+        .card-blue::before{background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple))}
+        .card-green::before{background:linear-gradient(90deg,var(--accent-green),#2dd4bf)}
+        .card-orange::before{background:linear-gradient(90deg,var(--accent-orange),#ff6b9d)}
+        .card-purple::before{background:linear-gradient(90deg,var(--accent-purple),var(--accent-blue))}
+        .card-icon{font-size:1.8rem;margin-bottom:16px}
+        .card h2{font-size:1.3rem;font-weight:600;margin-bottom:8px}
+        .card p{font-size:.9rem;color:var(--text-dim);line-height:1.5;margin-bottom:16px}
+        .card-meta{display:flex;gap:12px;align-items:center}
+        .tag{font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:4px 10px;border-radius:6px;background:rgba(79,143,255,.1);color:var(--accent-blue);border:1px solid rgba(79,143,255,.15)}
+        .tag-green{background:rgba(61,214,140,.1);color:var(--accent-green);border-color:rgba(61,214,140,.15)}
+        .tag-dim{background:rgba(107,112,148,.1);color:var(--text-dim);border-color:rgba(107,112,148,.15)}
+        .card-soon{opacity:.45;pointer-events:none}
+        footer{margin-top:80px;padding-top:30px;border-top:1px solid var(--border);font-size:.8rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:16px}
+        footer a{color:var(--accent-blue);text-decoration:none}
+        body,.card,footer,.tag,.ctrl-btn{transition:background-color .2s,color .2s,border-color .2s}
+        @media(max-width:700px){.grid{grid-template-columns:1fr}h1{font-size:2.2rem}.container{padding:40px 20px}.controls{top:12px;right:12px}}
     </style>
 </head>
 <body>
     <div class="noise"></div>
-    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
-        <span class="theme-icon">☀️</span>
-    </button>
+    <div class="controls">
+        <button class="ctrl-btn" onclick="cycleLang()" title="Language"><span class="lang-icon">EN</span></button>
+        <button class="ctrl-btn" onclick="toggleTheme()" title="Theme"><span class="theme-icon">☀️</span></button>
+    </div>
     <div class="container">
         <header>
             <div class="title-line">Cocos Creator 3.8.x</div>
             <h1>Playable Ads<br><span class="gradient">Toolkit</span></h1>
-            <p class="subtitle">Набор библиотек для разработки playable ads на Cocos Creator. Минимальный размер, максимальная функциональность.</p>
+            <p class="subtitle">
+                <span class="lang-en">A set of libraries for developing playable ads on Cocos Creator. Minimal size, maximum power.</span>
+                <span class="lang-ru">Набор библиотек для разработки playable ads на Cocos Creator. Минимальный размер, максимальная функциональность.</span>
+                <span class="lang-zh">基于 Cocos Creator 的试玩广告开发工具集。体积极小，功能强大。</span>
+            </p>
         </header>
-
         <div class="grid">
             <a href="mini-di/" class="card card-blue">
                 <div class="card-icon">📦</div>
                 <h2>MiniDI</h2>
-                <p>Lightweight DI container. Вдохновлён VContainer (Unity), оптимизирован для playable ads.</p>
+                <p>
+                    <span class="lang-en">Lightweight DI container inspired by VContainer (Unity), optimized for playable ads.</span>
+                    <span class="lang-ru">Легковесный DI контейнер, вдохновлён VContainer (Unity), оптимизирован для playable ads.</span>
+                    <span class="lang-zh">轻量级 DI 容器，灵感源自 VContainer (Unity)，专为试玩广告优化。</span>
+                </p>
                 <div class="card-meta">
                     <span class="tag">v1.1.0</span>
                     <span class="tag-green tag">stable</span>
                 </div>
             </a>
-
             <a href="#" class="card card-green card-soon">
                 <div class="card-icon">🎬</div>
                 <h2>ScenarioSystem</h2>
-                <p>Linear async scenario runner. Step-based flow для playable ad сценариев.</p>
-                <div class="card-meta">
-                    <span class="tag tag-dim">soon</span>
-                </div>
+                <p>
+                    <span class="lang-en">Linear async scenario runner. Step-based flow for playable ad scenarios.</span>
+                    <span class="lang-ru">Линейный async runner сценариев. Step-based flow для playable ad сценариев.</span>
+                    <span class="lang-zh">线性异步场景运行器。基于步骤的试玩广告流程控制。</span>
+                </p>
+                <div class="card-meta"><span class="tag tag-dim">soon</span></div>
             </a>
-
             <a href="#" class="card card-orange card-soon">
                 <div class="card-icon">✨</div>
                 <h2>NodeAnimator</h2>
-                <p>Fluent animation API с 24 пресетами, stagger, keyframes и loop support.</p>
-                <div class="card-meta">
-                    <span class="tag tag-dim">soon</span>
-                </div>
+                <p>
+                    <span class="lang-en">Fluent animation API with 24 presets, stagger, keyframes and loop support.</span>
+                    <span class="lang-ru">Fluent animation API с 24 пресетами, stagger, keyframes и loop support.</span>
+                    <span class="lang-zh">流式动画 API，内置 24 种预设、交错动画、关键帧和循环支持。</span>
+                </p>
+                <div class="card-meta"><span class="tag tag-dim">soon</span></div>
             </a>
-
             <a href="#" class="card card-purple card-soon">
                 <div class="card-icon">🔧</div>
                 <h2>Playable Modifier</h2>
-                <p>Electron-приложение для модификации и ре-скина playable ads.</p>
-                <div class="card-meta">
-                    <span class="tag tag-dim">soon</span>
-                </div>
+                <p>
+                    <span class="lang-en">Electron app for modifying and re-skinning playable ads.</span>
+                    <span class="lang-ru">Electron-приложение для модификации и ре-скина playable ads.</span>
+                    <span class="lang-zh">用于修改和换皮试玩广告的 Electron 桌面应用。</span>
+                </p>
+                <div class="card-meta"><span class="tag tag-dim">soon</span></div>
             </a>
         </div>
-
         <footer>
             <a href="https://github.com/SardorAkh" target="_blank">github.com/SardorAkh</a>
         </footer>
     </div>
     <script>
-        function getPreferredTheme() {
-            const saved = localStorage.getItem('toolkit-theme');
-            if (saved) return saved;
-            return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-        }
-
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            document.querySelector('.theme-icon').textContent = theme === 'light' ? '🌙' : '☀️';
-            localStorage.setItem('toolkit-theme', theme);
-        }
-
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme') || 'dark';
-            applyTheme(current === 'dark' ? 'light' : 'dark');
-        }
-
-        applyTheme(getPreferredTheme());
+        var langs=['en','ru','zh'],langLabels={en:'EN',ru:'RU',zh:'中文'};
+        function applyTheme(t){document.documentElement.setAttribute('data-theme',t);document.querySelector('.theme-icon').textContent=t==='light'?'🌙':'☀️';localStorage.setItem('toolkit-theme',t)}
+        function toggleTheme(){var c=document.documentElement.getAttribute('data-theme')||'dark';applyTheme(c==='dark'?'light':'dark')}
+        function applyLang(l){document.documentElement.setAttribute('data-lang',l);document.querySelector('.lang-icon').textContent=langLabels[l];localStorage.setItem('toolkit-lang',l)}
+        function cycleLang(){var c=document.documentElement.getAttribute('data-lang')||'en';applyLang(langs[(langs.indexOf(c)+1)%langs.length])}
+        (function(){var t=document.documentElement.getAttribute('data-theme')||'dark';var l=document.documentElement.getAttribute('data-lang')||'en';document.querySelector('.theme-icon').textContent=t==='light'?'🌙':'☀️';document.querySelector('.lang-icon').textContent=langLabels[l]})();
     </script>
 </body>
 </html>
