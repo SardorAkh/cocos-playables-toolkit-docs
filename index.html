@@ -17,22 +17,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #141519; --bg-card: #1c1d24; --bg-card-hover: #24262e;
-            --border: #2c2e3a; --text: #ececf0; --text-dim: #7c7f92;
-            --accent-blue: #4f8fff; --accent-purple: #9b6dff;
-            --accent-green: #3dd68c; --accent-orange: #ff8f4f;
-        }
-        [data-theme="light"] {
-            --bg: #f7f6f3; --bg-card: #efeee9; --bg-card-hover: #e6e5df;
-            --border: #d8d7d2; --text: #2c2c2e; --text-dim: #86868b;
-            --accent-blue: #3068d0; --accent-purple: #7c4dcc;
-            --accent-green: #2a9d5c; --accent-orange: #d06a2a;
-        }
-        [data-lang="en"] .lang-ru,[data-lang="en"] .lang-zh,
-        [data-lang="ru"] .lang-en,[data-lang="ru"] .lang-zh,
-        [data-lang="zh"] .lang-en,[data-lang="zh"] .lang-ru{display:none!important}
-
+        :root{--bg:#141519;--bg-card:#1c1d24;--bg-card-hover:#24262e;--border:#2c2e3a;--text:#ececf0;--text-dim:#7c7f92;--accent-blue:#4f8fff;--accent-purple:#9b6dff;--accent-green:#3dd68c;--accent-orange:#ff8f4f}
+        [data-theme="light"]{--bg:#f7f6f3;--bg-card:#efeee9;--bg-card-hover:#e6e5df;--border:#d8d7d2;--text:#2c2c2e;--text-dim:#86868b;--accent-blue:#3068d0;--accent-purple:#7c4dcc;--accent-green:#2a9d5c;--accent-orange:#d06a2a}
+        [data-lang="en"] .lang-ru,[data-lang="en"] .lang-zh,[data-lang="ru"] .lang-en,[data-lang="ru"] .lang-zh,[data-lang="zh"] .lang-en,[data-lang="zh"] .lang-ru{display:none!important}
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
         .noise{position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
@@ -112,15 +99,18 @@
                     <span class="tag-green tag">stable</span>
                 </div>
             </a>
-            <a href="#" class="card card-orange card-soon">
+            <a href="node-animator/" class="card card-orange">
                 <div class="card-icon">✨</div>
                 <h2>NodeAnimator</h2>
                 <p>
-                    <span class="lang-en">Fluent animation API with 24 presets, stagger, keyframes and loop support.</span>
-                    <span class="lang-ru">Fluent animation API с 24 пресетами, stagger, keyframes и loop support.</span>
-                    <span class="lang-zh">流式动画 API，内置 24 种预设、交错动画、关键帧和循环支持。</span>
+                    <span class="lang-en">Fluent animation API with 28+ presets, stagger groups, editor component and ScenarioSystem integration.</span>
+                    <span class="lang-ru">Fluent animation API с 28+ пресетами, stagger группами, компонентом для эдитора и интеграцией с ScenarioSystem.</span>
+                    <span class="lang-zh">流式动画 API，内置 28+ 预设、交错群组、编辑器组件和 ScenarioSystem 集成。</span>
                 </p>
-                <div class="card-meta"><span class="tag tag-dim">soon</span></div>
+                <div class="card-meta">
+                    <span class="tag">v1.0.0</span>
+                    <span class="tag-green tag">stable</span>
+                </div>
             </a>
             <a href="#" class="card card-purple card-soon">
                 <div class="card-icon">🔧</div>
