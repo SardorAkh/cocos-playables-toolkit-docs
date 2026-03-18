@@ -110,6 +110,26 @@
         .demo-group-stage{width:60px;height:60px;display:flex;align-items:center;justify-content:center;gap:3px}
         .demo-mini{width:10px;height:10px;border-radius:3px}
 
+        .builder-stage{background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:20px;margin:18px 0;position:relative;height:120px;display:flex;align-items:center;justify-content:center;gap:16px;overflow:hidden}
+        .builder-box{width:36px;height:36px;border-radius:7px;transition:none}
+        .builder-controls{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+        .builder-step{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px}
+        .builder-step select{background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'JetBrains Mono',monospace;font-size:.78rem;outline:none}
+        .builder-step select:focus{border-color:var(--accent)}
+        .builder-mode{display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+        .builder-mode button{background:var(--bg-tertiary);color:var(--text-muted);border:none;padding:5px 10px;font-size:.72rem;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .15s}
+        .builder-mode button.active{background:var(--accent);color:#fff}
+        .builder-num{font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--text-muted);min-width:20px}
+        .builder-target{font-size:.78rem;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;min-width:22px;text-align:center}
+        .builder-remove{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:0 4px;transition:color .15s}
+        .builder-remove:hover{color:var(--error)}
+        .builder-actions{display:flex;gap:8px;margin:10px 0}
+        .builder-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:.85rem;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .15s}
+        .builder-btn:hover{background:var(--accent-hover)}
+        .builder-btn-outline{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+        .builder-btn-outline:hover{border-color:var(--accent);color:var(--text-primary);background:transparent}
+        .builder-output{margin-top:14px}
+
         @media(max-width:900px){.sidebar{display:none}.main{margin-left:0;padding:24px 20px}.comparison{grid-template-columns:1fr}.topbar{padding:0 12px;gap:10px}}
     </style>
 </head>
@@ -154,17 +174,20 @@
                 <a href="#preview-movement" class="nav-link">Movement</a>
                 <a href="#preview-combo" class="nav-link">Combo</a>
                 <a href="#preview-group" class="nav-link">Group</a>
+                <a href="#sequencer-builder" class="nav-link">Sequencer Builder</a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title">API Reference</div>
                 <a href="#animate" class="nav-link">Animate</a>
+                <a href="#sequencer" class="nav-link">AnimSequencer</a>
                 <a href="#animate-group" class="nav-link">AnimateGroup</a>
                 <a href="#anim-handle" class="nav-link">AnimHandle</a>
                 <a href="#utilities" class="nav-link">Utilities</a>
             </div>
             <div class="nav-section">
                 <div class="nav-section-title"><span class="lang-en">Integration</span><span class="lang-ru">Интеграция</span><span class="lang-zh">集成</span></div>
-                <a href="#editor-component" class="nav-link">Editor Component</a>
+                <a href="#editor-component" class="nav-link">NodeAnimator</a>
+                <a href="#sequencer-component" class="nav-link">AnimSequencerComponent</a>
                 <a href="#scenario-step" class="nav-link">ScenarioSystem</a>
                 <a href="#types" class="nav-link">Types</a>
             </div>
@@ -302,6 +325,58 @@
                 <div class="demo-grid" id="grid-group"></div>
             </section>
 
+            <section id="sequencer-builder" class="section" data-search="sequencer builder combo constructor timeline parallel sequential">
+                <h2>Sequencer Builder <a href="#sequencer-builder" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Build animation combos visually. <strong>seq</strong> = wait for completion, <strong>par</strong> = fire and continue to next.</span>
+                    <span class="lang-ru">Собери комбо анимаций визуально. <strong>seq</strong> = ждать завершения, <strong>par</strong> = запустить и перейти к следующей.</span>
+                    <span class="lang-zh">可视化构建动画组合。<strong>seq</strong> = 等待完成，<strong>par</strong> = 触发后继续下一个。</span>
+                </p>
+                <div class="builder-stage" id="builderStage"></div>
+                <div class="builder-actions">
+                    <button class="builder-btn" onclick="builderPlay()">▶ Play</button>
+                    <button class="builder-btn builder-btn-outline" onclick="builderAddStep()">+ Add step</button>
+                    <button class="builder-btn builder-btn-outline" onclick="builderReset()">Reset</button>
+                </div>
+                <div class="builder-controls" id="builderSteps"></div>
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 <span class="lang-en">How seq / par works</span><span class="lang-ru">Как работает seq / par</span><span class="lang-zh">seq / par 如何工作</span></div>
+                    <p>
+                        <span class="lang-en"><code>seq(A) → par(B) → seq(C)</code> means: run A and wait. Then start B and C together, wait only for C. B runs in the background.</span>
+                        <span class="lang-ru"><code>seq(A) → par(B) → seq(C)</code>: запускаем A, ждём. Затем B и C стартуют вместе, ждём только C. B работает фоном.</span>
+                        <span class="lang-zh"><code>seq(A) → par(B) → seq(C)</code>：运行 A 并等待。然后同时启动 B 和 C，仅等待 C。B 在后台运行。</span>
+                    </p>
+                </div>
+                <h4><span class="lang-en">Generated code</span><span class="lang-ru">Сгенерированный код</span><span class="lang-zh">生成的代码</span></h4>
+                <div class="builder-output"><pre><code id="builderCode"><span class="cc">// add steps above ↑</span></code></pre></div>
+            </section>
+
+            <section id="sequencer" class="section" data-search="animsequencer sequencer sequential parallel chain orchestrate">
+                <h2>AnimSequencer <a href="#sequencer" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Orchestrate complex animation sequences mixing sequential and parallel steps.</span>
+                    <span class="lang-ru">Оркестрирует сложные последовательности анимаций, смешивая sequential и parallel шаги.</span>
+                    <span class="lang-zh">编排混合顺序和并行步骤的复杂动画序列。</span>
+                </p>
+                <pre><code><span class="ck">import</span> { AnimSequencer, Animate } <span class="ck">from</span> <span class="cs">'./AnimModule'</span>;<br><br><span class="ck">await</span> AnimSequencer.create()<br>    .seq(() => Animate.popIn(title))          <span class="cc">// 1. wait</span><br>    .par(() => Animate.fadeIn(background))     <span class="cc">// 2. fire, don't wait</span><br>    .seq(() => Animate.slideIn(panel))         <span class="cc">// 3. starts with #2, wait</span><br>    .seq(() => Animate.pulse(cta, { loop: <span class="ck">true</span> }))<br>    .play().promise;</code></pre>
+                <h3>API</h3>
+                <table>
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>.seq(factory, config?)</code></td><td><span class="lang-en">Run animation, wait for completion</span><span class="lang-ru">Запустить анимацию, ждать завершения</span><span class="lang-zh">运行动画，等待完成</span></td></tr>
+                        <tr><td><code>.par(factory, config?)</code></td><td><span class="lang-en">Run animation, continue immediately</span><span class="lang-ru">Запустить анимацию, продолжить немедленно</span><span class="lang-zh">运行动画，立即继续</span></td></tr>
+                        <tr><td><code>.delay(seconds)</code></td><td><span class="lang-en">Pause between steps</span><span class="lang-ru">Пауза между шагами</span><span class="lang-zh">步骤间暂停</span></td></tr>
+                        <tr><td><code>.call(fn)</code></td><td><span class="lang-en">Execute callback (sync or async)</span><span class="lang-ru">Выполнить callback (sync или async)</span><span class="lang-zh">执行回调（同步或异步）</span></td></tr>
+                        <tr><td><code>.play()</code></td><td><span class="lang-en">Start, returns AnimHandle</span><span class="lang-ru">Старт, возвращает AnimHandle</span><span class="lang-zh">启动，返回 AnimHandle</span></td></tr>
+                        <tr><td><code>.stop()</code></td><td><span class="lang-en">Stop all running animations</span><span class="lang-ru">Остановить все анимации</span><span class="lang-zh">停止所有动画</span></td></tr>
+                    </tbody>
+                </table>
+                <h3>StepConfig</h3>
+                <pre><code>{<br>    onBefore?: () => <span class="ck">void</span> | <span class="ct">Promise</span>&lt;<span class="ck">void</span>&gt;;  <span class="cc">// before animation starts</span><br>    onAfter?: () => <span class="ck">void</span> | <span class="ct">Promise</span>&lt;<span class="ck">void</span>&gt;;   <span class="cc">// after animation completes</span><br>}</code></pre>
+                <h4><span class="lang-en">Playable ad flow example</span><span class="lang-ru">Пример потока playable ad</span><span class="lang-zh">试玩广告流程示例</span></h4>
+                <pre><code>AnimSequencer.create()<br>    .seq(() => Animate.fadeIn(bg))<br>    .call(() => { tutorialHand.active = <span class="ck">true</span>; })<br>    .par(() => Animate.float(tutorialHand, { loop: <span class="ck">true</span> }))<br>    .seq(() => Animate.popIn(title), {<br>        onBefore: () => audioService.play(<span class="cs">'whoosh'</span>),<br>        onAfter:  () => analytics.track(<span class="cs">'title_shown'</span>),<br>    })<br>    .delay(<span class="cs">0.5</span>)<br>    .seq(() => AnimateGroup.staggerPopIn(buttons))<br>    .par(() => Animate.pulse(ctaBtn, { loop: <span class="ck">true</span> }))<br>    .seq(() => Animate.breathe(ctaGlow, { loop: <span class="ck">true</span> }))<br>    .play();</code></pre>
+            </section>
+
             <section id="animate" class="section" data-search="animate api reference static methods">
                 <h2>Animate <a href="#animate" class="anchor">#</a></h2>
                 <p>
@@ -418,7 +493,8 @@
                     <tbody>
                         <tr><td><code>.promise: Promise&lt;void&gt;</code></td><td><span class="lang-en">Await completion</span><span class="lang-ru">Ожидание завершения</span><span class="lang-zh">等待完成</span></td></tr>
                         <tr><td><code>.stopped: boolean</code></td><td><span class="lang-en">Was stopped</span><span class="lang-ru">Была остановлена</span><span class="lang-zh">是否已停止</span></td></tr>
-                        <tr><td><code>.stop()</code></td><td><span class="lang-en">Stop all tracked tweens, resolve promise</span><span class="lang-ru">Остановить все tweens, разрешить promise</span><span class="lang-zh">停止所有 tween 并 resolve promise</span></td></tr>
+                        <tr><td><code>.stop()</code></td><td><span class="lang-en">Stop all tracked tweens + children, resolve promise</span><span class="lang-ru">Остановить все tweens + дочерние, разрешить promise</span><span class="lang-zh">停止所有 tween 和子级并 resolve promise</span></td></tr>
+                        <tr><td><code>.trackChild(handle)</code></td><td><span class="lang-en">Track nested AnimHandle for cascading stop</span><span class="lang-ru">Отслеживать вложенный AnimHandle для каскадного stop</span><span class="lang-zh">跟踪嵌套 AnimHandle 以级联停止</span></td></tr>
                         <tr><td><code>AnimHandle.all(handles)</code></td><td><span class="lang-en">Combine multiple handles</span><span class="lang-ru">Объединить несколько handle</span><span class="lang-zh">合并多个 handle</span></td></tr>
                         <tr><td><code>AnimHandle.resolved()</code></td><td><span class="lang-en">Pre-resolved handle</span><span class="lang-ru">Заранее разрешённый handle</span><span class="lang-zh">预解析的 handle</span></td></tr>
                     </tbody>
@@ -447,30 +523,77 @@
                 </table>
             </section>
 
-            <section id="editor-component" class="section" data-search="editor component inspector nodeanimator preset">
-                <h2>Editor Component <a href="#editor-component" class="anchor">#</a></h2>
+            <section id="editor-component" class="section" data-search="editor component inspector nodeanimator preset intro outro parallel pipeline">
+                <h2>NodeAnimator <a href="#editor-component" class="anchor">#</a></h2>
                 <p>
-                    <span class="lang-en"><code>NodeAnimator</code> component — add to any node via Inspector.</span>
-                    <span class="lang-ru">Компонент <code>NodeAnimator</code> — добавляется на любую ноду через Inspector.</span>
-                    <span class="lang-zh"><code>NodeAnimator</code> 组件 - 通过 Inspector 添加到任意节点。</span>
+                    <span class="lang-en">Single-node component. Pipeline: <strong>intro → main → outro</strong>. Add via Inspector.</span>
+                    <span class="lang-ru">Компонент для одной ноды. Пайплайн: <strong>intro → main → outro</strong>. Добавляется через Inspector.</span>
+                    <span class="lang-zh">单节点组件。管线：<strong>intro → main → outro</strong>。通过 Inspector 添加。</span>
                 </p>
+                <h3>Main</h3>
                 <table>
                     <thead><tr><th>Property</th><th>Description</th></tr></thead>
                     <tbody>
-                        <tr><td><code>animationType</code></td><td><span class="lang-en">Animation preset enum (28 options)</span><span class="lang-ru">Пресет анимации (28 вариантов)</span><span class="lang-zh">动画预设枚举（28 个选项）</span></td></tr>
+                        <tr><td><code>animationType</code></td><td><span class="lang-en">Animation preset (28 options)</span><span class="lang-ru">Пресет анимации (28 вариантов)</span><span class="lang-zh">动画预设（28 个选项）</span></td></tr>
                         <tr><td><code>playTrigger</code></td><td><code>OnEnable</code> | <code>Manual</code></td></tr>
-                        <tr><td><code>duration</code></td><td><span class="lang-en">Duration in seconds</span><span class="lang-ru">Длительность в секундах</span><span class="lang-zh">持续时间（秒）</span></td></tr>
-                        <tr><td><code>delay</code></td><td><span class="lang-en">Delay before start</span><span class="lang-ru">Задержка перед стартом</span><span class="lang-zh">开始前延迟</span></td></tr>
-                        <tr><td><code>direction</code></td><td>Left / Right / Top / Bottom</td></tr>
-                        <tr><td><code>offset</code></td><td><span class="lang-en">Slide offset / drop height (px)</span><span class="lang-ru">Смещение / высота падения (px)</span><span class="lang-zh">滑动偏移 / 下落高度（px）</span></td></tr>
-                        <tr><td><code>scaleAmount</code></td><td><span class="lang-en">Scale multiplier for pulse/pop</span><span class="lang-ru">Множитель масштаба для pulse/pop</span><span class="lang-zh">脉冲/弹出的缩放倍数</span></td></tr>
-                        <tr><td><code>intensity</code></td><td><span class="lang-en">Shake/wiggle amplitude</span><span class="lang-ru">Амплитуда shake/wiggle</span><span class="lang-zh">抖动/摆动幅度</span></td></tr>
-                        <tr><td><code>loop</code></td><td><span class="lang-en">Loop the animation</span><span class="lang-ru">Зацикливание</span><span class="lang-zh">循环动画</span></td></tr>
-                        <tr><td><code>stopPrevious</code></td><td><span class="lang-en">Stop existing tweens before play</span><span class="lang-ru">Останавливать текущие tweens перед запуском</span><span class="lang-zh">播放前停止现有 tween</span></td></tr>
+                        <tr><td><code>duration</code>, <code>delay</code></td><td><span class="lang-en">Timing</span><span class="lang-ru">Тайминги</span><span class="lang-zh">时间参数</span></td></tr>
+                        <tr><td><code>direction</code>, <code>offset</code>, <code>scaleAmount</code>, <code>intensity</code></td><td><span class="lang-en">Animation params</span><span class="lang-ru">Параметры анимации</span><span class="lang-zh">动画参数</span></td></tr>
+                        <tr><td><code>loop</code></td><td><span class="lang-en">Loop main animation</span><span class="lang-ru">Зацикливание</span><span class="lang-zh">循环主动画</span></td></tr>
                     </tbody>
                 </table>
+                <h3>Intro / Outro</h3>
+                <table>
+                    <thead><tr><th>Property</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>introType</code></td><td>None / FadeIn / PopIn / ElasticPopIn / SlideIn / BounceIn</td></tr>
+                        <tr><td><code>introDuration</code></td><td>0.25s default</td></tr>
+                        <tr><td><code>introParallel</code></td><td><span class="lang-en"><code>true</code> = intro plays alongside main (e.g. fadeIn + pulse together)</span><span class="lang-ru"><code>true</code> = intro параллельно с main (напр. fadeIn + pulse вместе)</span><span class="lang-zh"><code>true</code> = intro 与 main 并行（如 fadeIn + pulse 同时播放）</span></td></tr>
+                        <tr><td><code>outroType</code></td><td>None / FadeOut / Shrink / SlideOut / Poof</td></tr>
+                        <tr><td><code>outroDuration</code></td><td>0.2s default</td></tr>
+                        <tr><td><code>outroParallel</code></td><td><span class="lang-en"><code>true</code> = outro plays alongside main end</span><span class="lang-ru"><code>true</code> = outro параллельно с концом main</span><span class="lang-zh"><code>true</code> = outro 与 main 结尾并行</span></td></tr>
+                    </tbody>
+                </table>
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 <span class="lang-en">Pipeline modes</span><span class="lang-ru">Режимы пайплайна</span><span class="lang-zh">管线模式</span></div>
+                    <p>
+                        <span class="lang-en"><code>introParallel: false</code> → intro finishes, then main. <code>introParallel: true</code> → intro + main simultaneously. Same logic for outro.</span>
+                        <span class="lang-ru"><code>introParallel: false</code> → intro заканчивается, потом main. <code>introParallel: true</code> → intro + main одновременно. Аналогично для outro.</span>
+                        <span class="lang-zh"><code>introParallel: false</code> → intro 完成后启动 main。<code>introParallel: true</code> → intro 和 main 同时启动。outro 同理。</span>
+                    </p>
+                </div>
                 <h4><span class="lang-en">Code API</span><span class="lang-ru">Программный API</span><span class="lang-zh">代码 API</span></h4>
-                <pre><code><span class="ck">const</span> animator = node.getComponent(NodeAnimator)!;<br>animator.play();          <span class="cc">// returns AnimHandle</span><br>animator.stop();<br>animator.isPlaying;       <span class="cc">// boolean</span></code></pre>
+                <pre><code><span class="ck">const</span> animator = node.getComponent(NodeAnimator)!;<br>animator.play();          <span class="cc">// returns AnimHandle (intro→main→outro)</span><br>animator.stop();<br>animator.isPlaying;       <span class="cc">// boolean</span></code></pre>
+            </section>
+
+            <section id="sequencer-component" class="section" data-search="sequencer component editor inspector multi step pipeline before after lifecycle activate deactivate">
+                <h2>AnimSequencerComponent <a href="#sequencer-component" class="anchor">#</a></h2>
+                <p>
+                    <span class="lang-en">Multi-step sequencer component. Each step: <strong>before → intro → main → outro → after</strong>.</span>
+                    <span class="lang-ru">Многошаговый секвенсор-компонент. Каждый шаг: <strong>before → intro → main → outro → after</strong>.</span>
+                    <span class="lang-zh">多步骤序列器组件。每个步骤：<strong>before → intro → main → outro → after</strong>。</span>
+                </p>
+                <h3>SequencerStep</h3>
+                <table>
+                    <thead><tr><th>Group</th><th>Property</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>—</td><td><code>mode</code></td><td><span class="lang-en">Seq (wait) / Par (fire and continue)</span><span class="lang-ru">Seq (ждать) / Par (запустить и дальше)</span><span class="lang-zh">Seq（等待）/ Par（触发后继续）</span></td></tr>
+                        <tr><td>—</td><td><code>targets</code></td><td>Node[]</td></tr>
+                        <tr><td>Intro</td><td><code>intro</code>, <code>introDuration</code></td><td><span class="lang-en">Appear animation before main</span><span class="lang-ru">Анимация появления перед main</span><span class="lang-zh">主动画前的出现动画</span></td></tr>
+                        <tr><td>Intro</td><td><code>introParallel</code></td><td><span class="lang-en">Play intro alongside main</span><span class="lang-ru">Intro параллельно с main</span><span class="lang-zh">intro 与 main 并行</span></td></tr>
+                        <tr><td>Main</td><td><code>animation</code>, <code>duration</code>, <code>loop</code></td><td><span class="lang-en">33 presets (incl. stagger groups)</span><span class="lang-ru">33 пресета (вкл. stagger группы)</span><span class="lang-zh">33 个预设（含交错群组）</span></td></tr>
+                        <tr><td>Outro</td><td><code>outro</code>, <code>outroDuration</code></td><td><span class="lang-en">Exit animation after main</span><span class="lang-ru">Анимация исчезновения после main</span><span class="lang-zh">主动画后的退出动画</span></td></tr>
+                        <tr><td>Outro</td><td><code>outroParallel</code></td><td><span class="lang-en">Play outro alongside main end</span><span class="lang-ru">Outro параллельно с концом main</span><span class="lang-zh">outro 与 main 结尾并行</span></td></tr>
+                        <tr><td>Params</td><td><code>direction</code>, <code>offset</code>, <code>scaleAmount</code>, <code>intensity</code>, <code>staggerDelay</code></td><td><span class="lang-en">Shared parameters</span><span class="lang-ru">Общие параметры</span><span class="lang-zh">共享参数</span></td></tr>
+                        <tr><td>Lifecycle</td><td><code>beforeAction</code></td><td>None / Activate / Deactivate / Destroy</td></tr>
+                        <tr><td>Lifecycle</td><td><code>afterAction</code></td><td>None / Activate / Deactivate / Destroy</td></tr>
+                        <tr><td>Lifecycle</td><td><code>activateBefore</code></td><td><span class="lang-en">Extra nodes to activate before step</span><span class="lang-ru">Доп. ноды — включить перед шагом</span><span class="lang-zh">步骤前激活的额外节点</span></td></tr>
+                        <tr><td>Lifecycle</td><td><code>deactivateAfter</code></td><td><span class="lang-en">Extra nodes to deactivate after step</span><span class="lang-ru">Доп. ноды — выключить после шага</span><span class="lang-zh">步骤后停用的额外节点</span></td></tr>
+                    </tbody>
+                </table>
+                <h4><span class="lang-en">Example setup</span><span class="lang-ru">Пример настройки</span><span class="lang-zh">设置示例</span></h4>
+                <pre><code><span class="cc">// Step 0: buttons appear with pulse</span><br>mode: Seq | targets: [Btn1, Btn2]<br>intro: PopIn (0.25s) | introParallel: <span class="ck">false</span><br>main: Pulse (loop) | outro: None<br><br><span class="cc">// Step 1: smoke VFX plays in background</span><br>mode: Par | targets: [SmokeVFX]<br>beforeAction: Activate<br>intro: FadeIn (0.3s) | introParallel: <span class="ck">true</span><br>main: Float | outro: FadeOut (0.2s)<br>afterAction: Deactivate</code></pre>
+                <h4><span class="lang-en">Code API</span><span class="lang-ru">Программный API</span><span class="lang-zh">代码 API</span></h4>
+                <pre><code><span class="ck">const</span> seq = node.getComponent(AnimSequencerComponent)!;<br><span class="ck">await</span> seq.play().promise;<br>seq.stop();<br>seq.isPlaying;</code></pre>
             </section>
 
             <section id="scenario-step" class="section" data-search="scenario step scenariosystem integration animatestep">
@@ -532,7 +655,7 @@
                 <h3>Direction</h3>
                 <pre><code><span class="ck">enum</span> <span class="ct">Direction</span> { Left, Right, Top, Bottom }</code></pre>
                 <h3>Imports</h3>
-                <pre><code><span class="ck">import</span> {<br>    Animate, AnimateGroup, AnimHandle, NodeAnimator, AnimateStep,<br>    ensureOpacity, stopAll, saveState, restoreState, scaleVec,<br>    Direction, EASE,<br>} <span class="ck">from</span> <span class="cs">'./AnimModule'</span>;<br><br><span class="ck">import type</span> {<br>    TweenEase, BaseAnimOptions, FadeOptions, PopOptions,<br>    SlideOptions, DropOptions, ShakeOptions, PulseOptions,<br>    FloatOptions, SpinOptions, WiggleOptions, FlipOptions,<br>    StaggerOptions, CollectOptions,<br>} <span class="ck">from</span> <span class="cs">'./AnimModule'</span>;</code></pre>
+                <pre><code><span class="ck">import</span> {<br>    Animate, AnimateGroup, AnimHandle, AnimSequencer,<br>    NodeAnimator, AnimSequencerComponent, AnimateStep,<br>    ensureOpacity, stopAll, saveState, restoreState, scaleVec,<br>    Direction, EASE,<br>} <span class="ck">from</span> <span class="cs">'./AnimModule'</span>;<br><br><span class="ck">import type</span> {<br>    TweenEase, BaseAnimOptions, FadeOptions, PopOptions,<br>    SlideOptions, DropOptions, ShakeOptions, PulseOptions,<br>    FloatOptions, SpinOptions, WiggleOptions, FlipOptions,<br>    StaggerOptions, CollectOptions, StepConfig,<br>} <span class="ck">from</span> <span class="cs">'./AnimModule'</span>;</code></pre>
             </section>
 
         </main>
@@ -682,6 +805,109 @@
         defs.movement.forEach(function(d){buildCell(d,'grid-movement',false)});
         defs.combo.forEach(function(d){buildCell(d,'grid-combo',false)});
         defs.group.forEach(function(d){buildCell(d,'grid-group',true)});
+
+        /* ═══ Sequencer Builder ═══ */
+        var bColors=['#7F77DD','#1D9E75','#D85A30','#D4537E','#378ADD'];
+        var bAnims=['popIn','fadeIn','slideIn','bounceIn','stampIn','elasticPop','flipIn','shake','wiggle','pulse','jelly','spin','float','rubberBand','importance','squash','fadeOut','shrink','poof'];
+        var bSteps=[];
+        var bBoxes=[];
+        var bStage=document.getElementById('builderStage');
+        for(var i=0;i<5;i++){var bx=document.createElement('div');bx.className='builder-box';bx.style.background=bColors[i];bStage.appendChild(bx);bBoxes.push(bx)}
+
+        function builderAddStep(){
+            var idx=bSteps.length;
+            bSteps.push({anim:'popIn',mode:'seq',target:idx%5});
+            builderRenderSteps();
+        }
+        builderAddStep();builderAddStep();builderAddStep();
+
+        function builderRenderSteps(){
+            var c=document.getElementById('builderSteps');c.innerHTML='';
+            bSteps.forEach(function(s,i){
+                var row=document.createElement('div');row.className='builder-step';
+                var num=document.createElement('span');num.className='builder-num';num.textContent=(i+1)+'.';
+                var sel=document.createElement('select');
+                bAnims.forEach(function(a){var o=document.createElement('option');o.value=a;o.textContent=a;if(a===s.anim)o.selected=true;sel.appendChild(o)});
+                sel.addEventListener('change',function(){s.anim=sel.value;builderGenCode()});
+                var tgt=document.createElement('select');
+                for(var j=0;j<5;j++){var o=document.createElement('option');o.value=j;o.textContent='box'+(j+1);if(j===s.target)o.selected=true;tgt.appendChild(o)}
+                tgt.addEventListener('change',function(){s.target=parseInt(tgt.value);builderGenCode()});
+                var mode=document.createElement('div');mode.className='builder-mode';
+                var btnSeq=document.createElement('button');btnSeq.textContent='seq';
+                var btnPar=document.createElement('button');btnPar.textContent='par';
+                if(s.mode==='seq')btnSeq.className='active';else btnPar.className='active';
+                btnSeq.addEventListener('click',function(){s.mode='seq';builderRenderSteps()});
+                btnPar.addEventListener('click',function(){s.mode='par';builderRenderSteps()});
+                mode.appendChild(btnSeq);mode.appendChild(btnPar);
+                var rm=document.createElement('button');rm.className='builder-remove';rm.textContent='×';
+                rm.addEventListener('click',(function(idx){return function(){bSteps.splice(idx,1);builderRenderSteps()}})(i));
+                row.appendChild(num);row.appendChild(sel);row.appendChild(tgt);row.appendChild(mode);row.appendChild(rm);
+                c.appendChild(row);
+            });
+            builderGenCode();
+        }
+
+        function builderGenCode(){
+            if(!bSteps.length){document.getElementById('builderCode').innerHTML='<span class="cc">// add steps above ↑</span>';return}
+            var lines=['AnimSequencer.create()'];
+            bSteps.forEach(function(s){
+                var m=s.mode==='par'?'par':'seq';
+                var call='.'+m+'(() => Animate.'+s.anim+'(box'+(s.target+1)+'))';
+                lines.push('    '+call);
+            });
+            lines.push('    .play();');
+            var html=lines.map(function(l){
+                return l.replace(/(\.seq|\.par|\.play)/g,'<span class="cd">$1</span>')
+                    .replace(/(Animate|AnimSequencer)/g,'<span class="ct">$1</span>')
+                    .replace(/(\.\w+)\(/g,function(m,fn){
+                        if(fn==='.create'||fn==='.play')return'<span class="cd">'+fn+'</span>(';
+                        return fn+'(';
+                    });
+            }).join('<br>');
+            document.getElementById('builderCode').innerHTML=html;
+        }
+
+        var bAnimFns={
+            popIn:function(b){b.style.opacity='0';b.style.transform='scale(0)';return anim([{dur:.18,ease:'backOut',apply:function(t){b.style.transform='scale('+lerp(0,1.15,t)+')';b.style.opacity=Math.min(1,t*2.5)}},{dur:.06,ease:'sineInOut',apply:function(t){b.style.transform='scale('+lerp(1.15,.95,t)+')'}},{dur:.06,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(.95,1,t)+')'}}])},
+            fadeIn:function(b){b.style.opacity='0';return anim([{dur:.3,ease:'sineOut',apply:function(t){b.style.opacity=t}}])},
+            slideIn:function(b){b.style.opacity='0';var ox=b.offsetLeft;b.style.transform='translateY(40px)';return anim([{dur:.3,ease:'cubicOut',apply:function(t){b.style.transform='translateY('+lerp(40,0,t)+'px)';b.style.opacity=Math.min(1,t*2)}}])},
+            bounceIn:function(b){b.style.opacity='0';b.style.transform='scale(0)';return anim([{dur:.5,ease:'bounceOut',apply:function(t){b.style.transform='scale('+t+')';b.style.opacity=Math.min(1,t*3)}}])},
+            stampIn:function(b){b.style.opacity='0';b.style.transform='scale(3)';return anim([{dur:.14,ease:'quartOut',apply:function(t){b.style.transform='scale('+lerp(3,.9,t)+')';b.style.opacity=Math.min(1,t*3)}},{dur:.1,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(.9,1.05,t)+')'}},{dur:.1,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(1.05,1,t)+')'}}])},
+            elasticPop:function(b){b.style.opacity='0';b.style.transform='scale(.3)';return anim([{dur:.2,ease:'elasticOut',apply:function(t){b.style.transform='scale('+lerp(.3,1.05,t)+')';b.style.opacity=Math.min(1,t*3)}},{dur:.1,ease:'sineInOut',apply:function(t){b.style.transform='scale('+lerp(1.05,.9,t)+')'}},{dur:.1,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(.9,1,t)+')'}}])},
+            flipIn:function(b){b.style.opacity='0';b.style.transform='scaleX(0)';return anim([{dur:.4,ease:'cubicOut',apply:function(t){b.style.transform='scaleX('+t+')';b.style.opacity=Math.min(1,t*2)}}])},
+            shake:function(b){return anim([{dur:.06,ease:'linear',apply:function(t){b.style.transform='translateX('+lerp(0,8,t)+'px)'}},{dur:.06,ease:'linear',apply:function(t){b.style.transform='translateX('+lerp(8,-8,t)+'px)'}},{dur:.06,ease:'linear',apply:function(t){b.style.transform='translateX('+lerp(-8,5,t)+'px)'}},{dur:.06,ease:'linear',apply:function(t){b.style.transform='translateX('+lerp(5,-3,t)+'px)'}},{dur:.06,ease:'linear',apply:function(t){b.style.transform='translateX('+lerp(-3,0,t)+'px)'}}])},
+            wiggle:function(b){return anim([{dur:.1,ease:'sineInOut',apply:function(t){b.style.transform='rotate('+lerp(0,-8,t)+'deg)'}},{dur:.1,ease:'sineInOut',apply:function(t){b.style.transform='rotate('+lerp(-8,8,t)+'deg)'}},{dur:.1,ease:'sineInOut',apply:function(t){b.style.transform='rotate('+lerp(8,-4,t)+'deg)'}},{dur:.1,ease:'sineOut',apply:function(t){b.style.transform='rotate('+lerp(-4,0,t)+'deg)'}}])},
+            pulse:function(b){return anim([{dur:.4,ease:'sineInOut',apply:function(t){b.style.transform='scale('+lerp(1,1.15,t)+')'}},{dur:.4,ease:'sineInOut',apply:function(t){b.style.transform='scale('+lerp(1.15,1,t)+')'}}])},
+            jelly:function(b){return anim([{dur:.13,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(1,1.2,t)+','+lerp(1,.8,t)+')'}},{dur:.13,ease:'sineInOut',apply:function(t){b.style.transform='scale('+lerp(1.2,.85,t)+','+lerp(.8,1.15,t)+')'}},{dur:.13,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(.85,1,t)+','+lerp(1.15,1,t)+')'}}])},
+            spin:function(b){return anim([{dur:.6,ease:'linear',apply:function(t){b.style.transform='rotate('+t*360+'deg)'}}])},
+            float:function(b){return anim([{dur:.4,ease:'sineInOut',apply:function(t){b.style.transform='translateY('+lerp(0,-12,t)+'px)'}},{dur:.4,ease:'sineInOut',apply:function(t){b.style.transform='translateY('+lerp(-12,12,t)+'px)'}},{dur:.4,ease:'sineInOut',apply:function(t){b.style.transform='translateY('+lerp(12,0,t)+'px)'}}])},
+            rubberBand:function(b){return anim([{dur:.1,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(1,1.25,t)+','+lerp(1,.75,t)+')'}},{dur:.1,ease:'sineInOut',apply:function(t){b.style.transform='scale('+lerp(1.25,.8,t)+','+lerp(.75,1.2,t)+')'}},{dur:.1,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(.8,1,t)+','+lerp(1.2,1,t)+')'}}])},
+            importance:function(b){return anim([{dur:.15,ease:'backOut',apply:function(t){b.style.transform='scale('+lerp(1,1.2,t)+')'}},{dur:.15,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(1.2,1,t)+')'}}])},
+            squash:function(b){return anim([{dur:.08,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(1,1.2,t)+','+lerp(1,.83,t)+')'}},{dur:.08,ease:'sineInOut',apply:function(t){b.style.transform='scale('+lerp(1.2,.85,t)+','+lerp(.83,1.18,t)+')'}},{dur:.08,ease:'sineOut',apply:function(t){b.style.transform='scale('+lerp(.85,1,t)+','+lerp(1.18,1,t)+')'}}])},
+            fadeOut:function(b){return anim([{dur:.25,ease:'sineIn',apply:function(t){b.style.opacity=1-t}}],function(){b.style.opacity='1'})},
+            shrink:function(b){return anim([{dur:.25,ease:'backIn',apply:function(t){b.style.transform='scale('+(1-t)+')';b.style.opacity=t>.5?1-(t-.5)*2:1}}],function(){b.style.transform='';b.style.opacity='1'})},
+            poof:function(b){return anim([{dur:.3,ease:'quadOut',apply:function(t){b.style.transform='scale('+lerp(1,2,t)+')';b.style.opacity=1-t}}],function(){b.style.transform='';b.style.opacity='1'})}
+        };
+
+        function builderPlay(){
+            bBoxes.forEach(function(b){b.style.transform='';b.style.opacity='1'});
+            if(!bSteps.length)return;
+            var idx=0;
+            function runNext(){
+                if(idx>=bSteps.length)return;
+                var step=bSteps[idx];idx++;
+                var box=bBoxes[step.target];
+                var fn=bAnimFns[step.anim];if(!fn)return runNext();
+                var a=fn(box);
+                if(step.mode==='seq'){
+                    var dur=a.totalDur*1000+50;
+                    setTimeout(runNext,dur);
+                }else{
+                    runNext();
+                }
+            }
+            runNext();
+        }
     </script>
 </body>
 </html>
