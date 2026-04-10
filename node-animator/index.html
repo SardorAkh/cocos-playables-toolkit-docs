@@ -203,9 +203,9 @@
                     <span class="lang-zh">面向 Cocos Creator 3.8.x 试玩广告的流式动画 API</span>
                 </p>
                 <p>
-                    <span class="lang-en">28+ animation presets, group stagger, editor component, and ScenarioSystem integration. ~1.5KB gzip.</span>
-                    <span class="lang-ru">28+ пресетов анимаций, групповой stagger, компонент для эдитора и интеграция с ScenarioSystem. ~1.5KB gzip.</span>
-                    <span class="lang-zh">28+ 动画预设、群组交错、编辑器组件和 ScenarioSystem 集成。约 1.5KB gzip。</span>
+                    <span class="lang-en">31+ animation presets, group stagger, editor component, and ScenarioSystem integration. ~1.5KB gzip.</span>
+                    <span class="lang-ru">31+ пресетов анимаций, групповой stagger, компонент для эдитора и интеграция с ScenarioSystem. ~1.5KB gzip.</span>
+                    <span class="lang-zh">31+ 动画预设、群组交错、编辑器组件和 ScenarioSystem 集成。约 1.5KB gzip。</span>
                 </p>
                 <div class="callout callout-info">
                     <div class="callout-title">💡 <span class="lang-en">Cocos-specific design</span><span class="lang-ru">Дизайн под Cocos</span><span class="lang-zh">针对 Cocos 设计</span></div>
@@ -452,8 +452,32 @@
                         <tr><td><code>collectTo(node, opts)</code></td><td><code>CollectOptions</code></td><td>Arc to target + shrink + fade</td></tr>
                     </tbody>
                 </table>
+                <h3><span class="lang-en">Color / Text / Progress</span><span class="lang-ru">Цвет / Текст / Прогресс</span><span class="lang-zh">颜色 / 文字 / 进度</span></h3>
+                <table>
+                    <thead><tr><th>Method</th><th>Options</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>colorTo(node, color, opts?)</code></td><td><code>ColorOptions</code></td><td><span class="lang-en">Animate Sprite.color to target</span><span class="lang-ru">Анимация Sprite.color к цели</span><span class="lang-zh">将 Sprite.color 动画到目标</span></td></tr>
+                        <tr><td><code>typewriter(node, text, opts?)</code></td><td><code>TypewriterOptions</code></td><td><span class="lang-en">Per-character text reveal on Label</span><span class="lang-ru">Посимвольное появление текста Label</span><span class="lang-zh">逐字显示 Label 文本</span></td></tr>
+                        <tr><td><code>progressFill(node, opts?)</code></td><td><code>ProgressFillOptions</code></td><td><span class="lang-en">Animate Sprite.fillRange (progress bar)</span><span class="lang-ru">Анимация Sprite.fillRange (прогресс-бар)</span><span class="lang-zh">动画 Sprite.fillRange（进度条）</span></td></tr>
+                    </tbody>
+                </table>
+                <pre><code>Animate.colorTo(icon, <span class="ck">new</span> Color(<span class="cs">255</span>, <span class="cs">50</span>, <span class="cs">50</span>), { duration: <span class="cs">0.3</span> });<br><br><span class="ck">await</span> Animate.typewriter(label, <span class="cs">"Level Complete!"</span>, { charDelay: <span class="cs">0.05</span> }).promise;<br><br>Animate.progressFill(bar, { from: <span class="cs">0.3</span>, to: <span class="cs">0.8</span>, overshoot: <span class="ck">true</span> });</code></pre>
                 <h3><span class="lang-en">Flow control</span><span class="lang-ru">Управление потоком</span><span class="lang-zh">流程控制</span></h3>
                 <pre><code><span class="cc">// sequential</span><br><span class="ck">await</span> Animate.sequence([a, b, c]).promise;<br><br><span class="cc">// parallel</span><br><span class="ck">await</span> Animate.parallel([a, b, c]).promise;<br><br><span class="cc">// stop all tweens</span><br>Animate.stop(node);</code></pre>
+                <h3><span class="lang-en">Value tweening</span><span class="lang-ru">Твин произвольных значений</span><span class="lang-zh">值补间</span></h3>
+                <p>
+                    <span class="lang-en">Tween any number with per-frame callback. Like DOTween.To().</span>
+                    <span class="lang-ru">Твин любого числа с колбэком на каждый кадр. Аналог DOTween.To().</span>
+                    <span class="lang-zh">对任意数值进行补间，每帧回调。类似 DOTween.To()。</span>
+                </p>
+                <table>
+                    <thead><tr><th>Method</th><th>Options</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>valueTo(from, to, opts)</code></td><td><code>ValueToOptions</code></td><td><span class="lang-en">Tween number, onUpdate per frame</span><span class="lang-ru">Твин числа, onUpdate каждый кадр</span><span class="lang-zh">数值补间，每帧 onUpdate</span></td></tr>
+                        <tr><td><code>valueToVec3(from, to, opts)</code></td><td><code>ValueToVec3Options</code></td><td><span class="lang-en">Tween Vec3, onUpdate(x,y,z)</span><span class="lang-ru">Твин Vec3, onUpdate(x,y,z)</span><span class="lang-zh">Vec3 补间，onUpdate(x,y,z)</span></td></tr>
+                    </tbody>
+                </table>
+                <pre><code><span class="cc">// Score counter</span><br>Animate.valueTo(<span class="cs">0</span>, <span class="cs">1500</span>, {<br>    duration: <span class="cs">1.2</span>,<br>    easing: <span class="cs">'cubicOut'</span>,<br>    onUpdate: (v) => { scoreLabel.string = Math.round(v).toString(); },<br>});<br><br><span class="cc">// Timer countdown with progress bar</span><br>Animate.valueTo(<span class="cs">30</span>, <span class="cs">0</span>, {<br>    duration: <span class="cs">30</span>,<br>    easing: <span class="cs">'linear'</span>,<br>    onUpdate: (v) => {<br>        timerLabel.string = v.toFixed(<span class="cs">1</span>);<br>        timerBar.fillRange = v / <span class="cs">30</span>;<br>    },<br>});<br><br><span class="cc">// Shader uniform</span><br>Animate.valueTo(<span class="cs">0</span>, <span class="cs">1</span>, {<br>    duration: <span class="cs">0.5</span>,<br>    onUpdate: (v) => { material.setProperty(<span class="cs">'progress'</span>, v); },<br>});</code></pre>
             </section>
 
             <section id="animate-group" class="section" data-search="animategroup stagger group cascade wave">
@@ -648,6 +672,11 @@
                         <tr><td><code>FlipOptions</code></td><td><code>axis?: 'x'|'y'</code></td></tr>
                         <tr><td><code>CollectOptions</code></td><td><code>target: Node</code>, <code>arc?: number</code>, <code>shrink?: boolean</code></td></tr>
                         <tr><td><code>StaggerOptions</code></td><td><code>staggerDelay?: number</code>, <code>from?: 'start'|'end'|'center'|'random'</code></td></tr>
+                        <tr><td><code>ColorOptions</code></td><td><code>from?: {r,g,b,a}</code></td></tr>
+                        <tr><td><code>TypewriterOptions</code></td><td><code>charDelay?: number</code></td></tr>
+                        <tr><td><code>ProgressFillOptions</code></td><td><code>from?: number</code>, <code>to?: number</code>, <code>overshoot?: boolean</code></td></tr>
+                        <tr><td><code>ValueToOptions</code></td><td><code>onUpdate: (value: number) =&gt; void</code></td></tr>
+                        <tr><td><code>ValueToVec3Options</code></td><td><code>onUpdate: (x, y, z) =&gt; void</code></td></tr>
                     </tbody>
                 </table>
                 <h3>EASE <span class="lang-en">presets</span><span class="lang-ru">пресеты</span><span class="lang-zh">预设</span></h3>
@@ -655,7 +684,7 @@
                 <h3>Direction</h3>
                 <pre><code><span class="ck">enum</span> <span class="ct">Direction</span> { Left, Right, Top, Bottom }</code></pre>
                 <h3>Imports</h3>
-                <pre><code><span class="ck">import</span> {<br>    Animate, AnimateGroup, AnimHandle, AnimSequencer,<br>    NodeAnimator, AnimSequencerComponent, AnimateStep,<br>    ensureOpacity, stopAll, saveState, restoreState, scaleVec,<br>    Direction, EASE,<br>} <span class="ck">from</span> <span class="cs">'./AnimModule'</span>;<br><br><span class="ck">import type</span> {<br>    TweenEase, BaseAnimOptions, FadeOptions, PopOptions,<br>    SlideOptions, DropOptions, ShakeOptions, PulseOptions,<br>    FloatOptions, SpinOptions, WiggleOptions, FlipOptions,<br>    StaggerOptions, CollectOptions, StepConfig,<br>} <span class="ck">from</span> <span class="cs">'./AnimModule'</span>;</code></pre>
+                <pre><code><span class="ck">import</span> {<br>    Animate, AnimateGroup, AnimHandle, AnimSequencer,<br>    NodeAnimator, AnimSequencerComponent, AnimateStep,<br>    ensureOpacity, stopAll, saveState, restoreState, scaleVec,<br>    Direction, EASE,<br>} <span class="ck">from</span> <span class="cs">'./AnimModule'</span>;<br><br><span class="ck">import type</span> {<br>    TweenEase, BaseAnimOptions, FadeOptions, PopOptions,<br>    SlideOptions, DropOptions, ShakeOptions, PulseOptions,<br>    FloatOptions, SpinOptions, WiggleOptions, FlipOptions,<br>    StaggerOptions, CollectOptions, StepConfig,<br>    ColorOptions, TypewriterOptions, ProgressFillOptions,<br>    ValueToOptions, ValueToVec3Options,<br>} <span class="ck">from</span> <span class="cs">'./AnimModule'</span>;</code></pre>
             </section>
 
         </main>
